@@ -259,7 +259,7 @@
 
 <div class="container">
     <h1>🕵️ SWILL Intelligence</h1>
-    <div class="sub">Поиск данных по IP и номеру телефона: геолокация, владелец, имя, фамилия, местоположение провайдера</div>
+    <div class="sub">Определение местоположения по провайдеру IP-адреса</div>
 
     <div class="tabs">
         <div class="tab active" data-tab="ip-tab">🌐 IP-адрес</div>
@@ -275,7 +275,7 @@
 
     <div id="phone-tab" class="tab-content">
         <div class="input-group">
-            <input type="text" id="phoneInput" placeholder="Введите номер, например +79261234567" value="+79261234567">
+            <input type="text" id="phoneInput" placeholder="Введите номер, например +79261234567">
             <button id="phoneAnalyzeBtn">🔍 Пробить номер</button>
         </div>
     </div>
@@ -290,7 +290,7 @@
 
 <script>
     // ================================================================
-    // РАСШИРЕННАЯ ВЕРСИЯ — ПОИСК МЕСТОПОЛОЖЕНИЯ ПО ПРОВАЙДЕРУ
+    // ВЕРСИЯ 2.0 — ПРИОРИТЕТ ПРОВАЙДЕРА + ОТЛАДКА
     // ================================================================
 
     console.log('✅ SWILL Intelligence загружен!');
@@ -298,84 +298,62 @@
     // ---- БАЗА ПРОВАЙДЕРОВ С ГЕОГРАФИЧЕСКОЙ ПРИВЯЗКОЙ ----
     const PROVIDER_DB = {
         // Россия
-        'AS216400 FOR UNITY LLC': { city: 'Ереван', region: 'Армения', country: 'AM', lat: '40.1776', lon: '44.5126' },
-        'AS12389 ROSTELECOM': { city: 'Москва', region: 'Московская область', country: 'RU', lat: '55.7558', lon: '37.6173' },
-        'AS8359 MTS': { city: 'Москва', region: 'Московская область', country: 'RU', lat: '55.7558', lon: '37.6173' },
-        'AS3216 BEELINE': { city: 'Москва', region: 'Московская область', country: 'RU', lat: '55.7558', lon: '37.6173' },
-        'AS12714 MEGAFON': { city: 'Москва', region: 'Московская область', country: 'RU', lat: '55.7558', lon: '37.6173' },
-        'AS9049 TELE2': { city: 'Москва', region: 'Московская область', country: 'RU', lat: '55.7558', lon: '37.6173' },
-        'AS15169 GOOGLE': { city: 'Маунтин-Вью', region: 'Калифорния', country: 'US', lat: '37.3860', lon: '-122.0838' },
-        'AS13335 CLOUDFLARE': { city: 'Сан-Франциско', region: 'Калифорния', country: 'US', lat: '37.7749', lon: '-122.4194' },
-        'AS16509 AMAZON': { city: 'Сиэтл', region: 'Вашингтон', country: 'US', lat: '47.6062', lon: '-122.3321' },
-        'AS8075 MICROSOFT': { city: 'Редмонд', region: 'Вашингтон', country: 'US', lat: '47.6740', lon: '-122.1215' },
-        'AS32934 FACEBOOK': { city: 'Менло-Парк', region: 'Калифорния', country: 'US', lat: '37.4535', lon: '-122.1797' },
-        'AS396982 GOOGLE CLOUD': { city: 'Маунтин-Вью', region: 'Калифорния', country: 'US', lat: '37.3860', lon: '-122.0838' },
-        'AS14061 DIGITALOCEAN': { city: 'Нью-Йорк', region: 'Нью-Йорк', country: 'US', lat: '40.7128', lon: '-74.0060' },
-        'AS14618 AMAZON': { city: 'Сиэтл', region: 'Вашингтон', country: 'US', lat: '47.6062', lon: '-122.3321' },
-        'AS16276 OVH': { city: 'Рубе', region: 'О-де-Франс', country: 'FR', lat: '50.6927', lon: '3.1745' },
-        'AS12876 ONLINE': { city: 'Париж', region: 'Иль-де-Франс', country: 'FR', lat: '48.8566', lon: '2.3522' },
-        'AS24940 HETZNER': { city: 'Гюнценхаузен', region: 'Бавария', country: 'DE', lat: '49.4554', lon: '11.0611' },
-        'AS3320 DTAG': { city: 'Бонн', region: 'Северный Рейн-Вестфалия', country: 'DE', lat: '50.7374', lon: '7.0982' },
-        'AS2856 BT': { city: 'Лондон', region: 'Англия', country: 'GB', lat: '51.5074', lon: '-0.1278' },
-        'AS5400 BT': { city: 'Лондон', region: 'Англия', country: 'GB', lat: '51.5074', lon: '-0.1278' },
-        'AS20940 AKAMAI': { city: 'Кембридж', region: 'Массачусетс', country: 'US', lat: '42.3736', lon: '-71.1097' },
-        'AS54113 FASTLY': { city: 'Сан-Франциско', region: 'Калифорния', country: 'US', lat: '37.7749', lon: '-122.4194' },
-        'AS2518 BIGLOBE': { city: 'Токио', region: 'Токио', country: 'JP', lat: '35.6762', lon: '139.6503' },
-        'AS4134 CHINANET': { city: 'Пекин', region: 'Пекин', country: 'CN', lat: '39.9042', lon: '116.4074' },
-        'AS4812 CHINANET': { city: 'Шанхай', region: 'Шанхай', country: 'CN', lat: '31.2304', lon: '121.4737' },
-        'AS4766 KORNET': { city: 'Сеул', region: 'Сеул', country: 'KR', lat: '37.5665', lon: '126.9780' },
-        'AS3786 LG DACOM': { city: 'Сеул', region: 'Сеул', country: 'KR', lat: '37.5665', lon: '126.9780' },
-        'AS17557 PAKISTAN TELECOM': { city: 'Исламабад', region: 'Исламабад', country: 'PK', lat: '33.6844', lon: '73.0479' },
-        'AS24544 VODAFONE': { city: 'Лондон', region: 'Англия', country: 'GB', lat: '51.5074', lon: '-0.1278' },
-        'AS21357 VODAFONE': { city: 'Дюссельдорф', region: 'Северный Рейн-Вестфалия', country: 'DE', lat: '51.2277', lon: '6.7735' },
-        'AS1273 VODAFONE': { city: 'Милан', region: 'Ломбардия', country: 'IT', lat: '45.4642', lon: '9.1900' },
+        'FOR UNITY LLC': { city: 'Ереван', region: 'Армения', country: 'AM', lat: '40.1776', lon: '44.5126' },
+        'ROSTELECOM': { city: 'Москва', region: 'Московская область', country: 'RU', lat: '55.7558', lon: '37.6173' },
+        'MTS': { city: 'Москва', region: 'Московская область', country: 'RU', lat: '55.7558', lon: '37.6173' },
+        'BEELINE': { city: 'Москва', region: 'Московская область', country: 'RU', lat: '55.7558', lon: '37.6173' },
+        'MEGAFON': { city: 'Москва', region: 'Московская область', country: 'RU', lat: '55.7558', lon: '37.6173' },
+        'TELE2': { city: 'Москва', region: 'Московская область', country: 'RU', lat: '55.7558', lon: '37.6173' },
+        // США
+        'GOOGLE': { city: 'Маунтин-Вью', region: 'Калифорния', country: 'US', lat: '37.3860', lon: '-122.0838' },
+        'CLOUDFLARE': { city: 'Сан-Франциско', region: 'Калифорния', country: 'US', lat: '37.7749', lon: '-122.4194' },
+        'AMAZON': { city: 'Сиэтл', region: 'Вашингтон', country: 'US', lat: '47.6062', lon: '-122.3321' },
+        'MICROSOFT': { city: 'Редмонд', region: 'Вашингтон', country: 'US', lat: '47.6740', lon: '-122.1215' },
+        'FACEBOOK': { city: 'Менло-Парк', region: 'Калифорния', country: 'US', lat: '37.4535', lon: '-122.1797' },
+        // Европа
+        'OVH': { city: 'Рубе', region: 'О-де-Франс', country: 'FR', lat: '50.6927', lon: '3.1745' },
+        'HETZNER': { city: 'Гюнценхаузен', region: 'Бавария', country: 'DE', lat: '49.4554', lon: '11.0611' },
+        'DTAG': { city: 'Бонн', region: 'Северный Рейн-Вестфалия', country: 'DE', lat: '50.7374', lon: '7.0982' },
+        'BT': { city: 'Лондон', region: 'Англия', country: 'GB', lat: '51.5074', lon: '-0.1278' },
+        // Азия
+        'CHINANET': { city: 'Пекин', region: 'Пекин', country: 'CN', lat: '39.9042', lon: '116.4074' },
+        'KORNET': { city: 'Сеул', region: 'Сеул', country: 'KR', lat: '37.5665', lon: '126.9780' },
+        'BIGLOBE': { city: 'Токио', region: 'Токио', country: 'JP', lat: '35.6762', lon: '139.6503' },
         // Украина
-        'AS15895 KIEVSTAR': { city: 'Киев', region: 'Киевская область', country: 'UA', lat: '50.4501', lon: '30.5234' },
-        'AS13188 UKRTELECOM': { city: 'Киев', region: 'Киевская область', country: 'UA', lat: '50.4501', lon: '30.5234' },
+        'KIEVSTAR': { city: 'Киев', region: 'Киевская область', country: 'UA', lat: '50.4501', lon: '30.5234' },
+        'UKRTELECOM': { city: 'Киев', region: 'Киевская область', country: 'UA', lat: '50.4501', lon: '30.5234' },
         // Беларусь
-        'AS6697 BELTELECOM': { city: 'Минск', region: 'Минская область', country: 'BY', lat: '53.9045', lon: '27.5615' },
+        'BELTELECOM': { city: 'Минск', region: 'Минская область', country: 'BY', lat: '53.9045', lon: '27.5615' },
         // Казахстан
-        'AS9198 KAZAKHTELECOM': { city: 'Алматы', region: 'Алматинская область', country: 'KZ', lat: '43.2220', lon: '76.8512' },
-        // Другие
-        'AS2906 NETFLIX': { city: 'Лос-Гатос', region: 'Калифорния', country: 'US', lat: '37.2266', lon: '-121.9747' },
-        'AS22859 DISNEY': { city: 'Бербанк', region: 'Калифорния', country: 'US', lat: '34.1808', lon: '-118.3090' },
-        'AS26548 SONY': { city: 'Токио', region: 'Токио', country: 'JP', lat: '35.6762', lon: '139.6503' },
-        'AS15133 SAMSUNG': { city: 'Сеул', region: 'Сеул', country: 'KR', lat: '37.5665', lon: '126.9780' },
+        'KAZAKHTELECOM': { city: 'Алматы', region: 'Алматинская область', country: 'KZ', lat: '43.2220', lon: '76.8512' }
     };
 
     // ---- ПОИСК ПРОВАЙДЕРА В БАЗЕ ----
-    function findProviderLocation(org, geoCity, geoCountry) {
-        // 1. Ищем точное совпадение
+    function findProviderLocation(org) {
+        if (!org) return null;
+
+        // 1. Точное совпадение
         if (PROVIDER_DB[org]) {
             return PROVIDER_DB[org];
         }
 
-        // 2. Ищем частичное совпадение
+        // 2. Частичное совпадение
         for (let key in PROVIDER_DB) {
             if (org.includes(key) || key.includes(org)) {
                 return PROVIDER_DB[key];
             }
         }
 
-        // 3. Ищем по ключевым словам
-        const keywords = org.split(' ').filter(w => w.length > 3);
-        for (let kw of keywords) {
-            for (let key in PROVIDER_DB) {
-                if (key.includes(kw) || kw.includes(key)) {
-                    return PROVIDER_DB[key];
+        // 3. По словам
+        const words = org.split(' ');
+        for (let word of words) {
+            if (word.length > 3) {
+                for (let key in PROVIDER_DB) {
+                    if (key.includes(word) || word.includes(key)) {
+                        return PROVIDER_DB[key];
+                    }
                 }
             }
-        }
-
-        // 4. Если не нашли — используем геолокацию по IP
-        if (geoCity && geoCity !== 'N/A') {
-            return {
-                city: geoCity,
-                region: geoCountry || 'Неизвестно',
-                country: geoCountry || 'Неизвестно',
-                lat: 'N/A',
-                lon: 'N/A'
-            };
         }
 
         return null;
@@ -388,6 +366,15 @@
     const phoneAnalyzeBtn = document.getElementById('phoneAnalyzeBtn');
     const loader = document.getElementById('loader');
     const resultContainer = document.getElementById('resultContainer');
+
+    console.log('🔍 Элементы найдены:', {
+        ipInput: !!ipInput,
+        ipAnalyzeBtn: !!ipAnalyzeBtn,
+        phoneInput: !!phoneInput,
+        phoneAnalyzeBtn: !!phoneAnalyzeBtn,
+        loader: !!loader,
+        resultContainer: !!resultContainer
+    });
 
     // ---- ВКЛАДКИ ----
     document.querySelectorAll('.tab').forEach(tab => {
@@ -410,7 +397,7 @@
     }
 
     // ================================================================
-    // 1. АНАЛИЗ IP (С ПОИСКОМ ПО ПРОВАЙДЕРУ)
+    // 1. АНАЛИЗ IP (ПРИОРИТЕТ — ПРОВАЙДЕР)
     // ================================================================
     async function analyzeIP(ip) {
         console.log('🔍 Анализ IP:', ip);
@@ -418,25 +405,38 @@
         resultContainer.classList.remove('visible');
 
         try {
-            // ----- 1. ГЕОЛОКАЦИЯ -----
+            // ----- 1. ГЕОЛОКАЦИЯ (ipinfo.io) -----
+            console.log('📡 Запрос к ipinfo.io...');
             const geoResp = await fetch(`https://ipinfo.io/${ip}/json`);
             if (!geoResp.ok) throw new Error('Не удалось получить геоданные');
             const geo = await geoResp.json();
             console.log('🌍 Гео:', geo);
 
-            // ----- 2. ПОИСК МЕСТОПОЛОЖЕНИЯ ПО ПРОВАЙДЕРУ -----
+            // ----- 2. ПОИСК ПО ПРОВАЙДЕРУ -----
             const providerOrg = geo.org || '';
-            const providerLocation = findProviderLocation(providerOrg, geo.city, geo.country);
-            console.log('📍 Провайдер:', providerOrg);
-            console.log('📍 Местоположение провайдера:', providerLocation);
+            console.log('🏢 Провайдер:', providerOrg);
 
-            // ----- 3. ПОИСК ИМЕНИ И ФАМИЛИИ -----
+            let location = findProviderLocation(providerOrg);
+            console.log('📍 Найденное местоположение:', location);
+
+            // Если провайдер не найден — используем геолокацию по IP
+            if (!location) {
+                location = {
+                    city: geo.city || 'N/A',
+                    region: geo.region || 'N/A',
+                    country: geo.country || 'N/A',
+                    lat: geo.loc ? geo.loc.split(',')[0] : 'N/A',
+                    lon: geo.loc ? geo.loc.split(',')[1] : 'N/A'
+                };
+                console.log('📍 Используем геолокацию по IP');
+            }
+
+            // ----- 3. ПОИСК ИМЕНИ (из провайдера) -----
             let nameData = { name: 'Не найдено', surname: 'Не найдено', source: [] };
-
             if (geo.org) {
-                const orgParts = geo.org.split(' ');
-                const common = ['LLC', 'LTD', 'INC', 'CORP', 'CO', 'ltd', 'inc', 'corp', 'AS', 'SIA', 'OOO', 'ООО', 'ГБУ', 'ГУП', 'МУП', 'ФГУП', 'FOR', 'UNITY'];
-                const filtered = orgParts.filter(p => !common.includes(p.toUpperCase()));
+                const parts = geo.org.split(' ');
+                const common = ['LLC', 'LTD', 'INC', 'CORP', 'CO', 'AS', 'SIA', 'OOO', 'ООО', 'FOR', 'UNITY'];
+                const filtered = parts.filter(p => !common.includes(p.toUpperCase()) && p.length > 2);
                 if (filtered.length > 0) {
                     nameData.name = filtered[0];
                     if (filtered.length > 1) nameData.surname = filtered.slice(1).join(' ');
@@ -444,6 +444,7 @@
                 }
             }
 
+            // ----- 4. REVERSE IP (домены) -----
             try {
                 const rtResp = await fetch(`https://api.hackertarget.com/reverseiplookup/?q=${ip}`);
                 const rtText = await rtResp.text();
@@ -461,28 +462,26 @@
                         }
                     }
                 }
-            } catch (e) {}
+            } catch (e) { console.log('ℹ️ Reverse IP не доступен'); }
 
-            // ----- 4. ФОРМИРУЕМ ОТВЕТ -----
+            // ----- 5. ФОРМИРУЕМ ОТВЕТ -----
             let html = '';
 
-            // Информация о провайдере и его местоположении
+            // Местоположение по провайдеру (ОСНОВНОЕ)
+            html += `<div class="section-title">📍 Местоположение (по провайдеру)</div>`;
+            html += `<div class="grid-2col">`;
+            html += `<div class="grid-item"><span class="label">Город</span><span class="value">${location.city}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${location.region}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${location.country}</span></div>`;
+            if (location.lat !== 'N/A' && location.lon !== 'N/A') {
+                html += `<div class="grid-item"><span class="label">Координаты</span><span class="value">${location.lat}, ${location.lon}</span></div>`;
+            }
+            html += `</div>`;
+
+            // Информация о провайдере
             html += `<div class="section-title">🏢 Провайдер</div>`;
             html += `<div class="grid-2col">`;
-            html += `<div class="grid-item"><span class="label">Название</span><span class="value">${geo.org || 'N/A'}</span></div>`;
-            if (providerLocation) {
-                html += `<div class="grid-item"><span class="label">Город</span><span class="value">${providerLocation.city}</span></div>`;
-                html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${providerLocation.region}</span></div>`;
-                html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${providerLocation.country}</span></div>`;
-                if (providerLocation.lat !== 'N/A') {
-                    html += `<div class="grid-item"><span class="label">Координаты</span><span class="value">${providerLocation.lat}, ${providerLocation.lon}</span></div>`;
-                }
-            } else {
-                html += `<div class="grid-item" style="grid-column:1/-1;">
-                    <span class="label" style="color:#ffcc66;">⚠️ Провайдер не найден в базе</span>
-                    <span class="value" style="font-weight:300;font-size:13px;color:#8aa0c0;">Используется геолокация по IP</span>
-                </div>`;
-            }
+            html += `<div class="grid-item" style="grid-column:1/-1;"><span class="label">Название</span><span class="value">${geo.org || 'N/A'}</span></div>`;
             html += `</div>`;
 
             // Владелец
@@ -498,22 +497,22 @@
             }
             html += `</div>`;
 
-            // Геолокация (по IP)
+            // Геолокация по IP (для сравнения)
             html += `<div class="section-title">📍 Геолокация (по IP)</div>`;
             html += `<div class="grid-2col">`;
             html += `<div class="grid-item"><span class="label">Город</span><span class="value">${geo.city || 'N/A'}</span></div>`;
             html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${geo.region || 'N/A'}</span></div>`;
             html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${geo.country || 'N/A'}</span></div>`;
             html += `<div class="grid-item"><span class="label">Координаты</span><span class="value">${geo.loc || 'N/A'}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Часовой пояс</span><span class="value">${geo.timezone || 'N/A'}</span></div>`;
             html += `</div>`;
 
             html += `<div class="section-title">📦 Сырые данные (JSON)</div>`;
-            html += `<div id="rawJson">${JSON.stringify({ geo, providerLocation, name: nameData }, null, 2)}</div>`;
+            html += `<div id="rawJson">${JSON.stringify({ geo, providerLocation: location, name: nameData }, null, 2)}</div>`;
 
             showResult(html);
 
         } catch (error) {
+            console.error('❌ Ошибка:', error);
             showError(`Ошибка: ${error.message}`);
         } finally {
             hideLoader();
@@ -544,8 +543,7 @@
             const countryCodes = {
                 '7': 'Россия', '380': 'Украина', '375': 'Беларусь', '1': 'США',
                 '44': 'Великобритания', '49': 'Германия', '33': 'Франция',
-                '39': 'Италия', '34': 'Испания', '86': 'Китай', '91': 'Индия',
-                '81': 'Япония', '82': 'Корея', '55': 'Бразилия', '61': 'Австралия'
+                '39': 'Италия', '34': 'Испания', '86': 'Китай', '91': 'Индия'
             };
 
             let cleanForCountry = cleanNumber.replace(/^\+/, '');
@@ -618,13 +616,96 @@
                 { name: 'Google', url: `https://www.google.com/search?q=${cleanNumber}` },
                 { name: 'Yandex', url: `https://yandex.ru/search/?text=${cleanNumber}` },
                 { name: 'VK', url: `https://vk.com/search?q=${cleanNumber}` },
-                { name: 'Telegram', url: `https://t.me/search?q=${cleanNumber}` },
-                { name: 'Instagram', url: `https://www.instagram.com/explore/tags/${cleanNumber.replace('+', '')}` },
-                { name: 'Facebook', url: `https://www.facebook.com/search/top/?q=${cleanNumber}` }
+                { name: 'Telegram', url: `https://t.me/search?q=${cleanNumber}` }
             ];
 
             let html = '';
 
             html += `<div class="section-title">📋 Основная информация</div>`;
             html += `<div class="grid-2col">`;
-            html += `<div class="grid-item"><span class="
+            html += `<div class="grid-item"><span class="label">Номер</span><span class="value">${cleanNumber}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${country}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Оператор</span><span class="value">${operator}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${region}</span></div>`;
+            html += `</div>`;
+
+            html += `<div class="section-title">👤 Владелец</div>`;
+            if (foundName.name !== 'Не найдено') {
+                html += `<div class="found-name">`;
+                html += `<strong>Имя:</strong> ${foundName.name}<br>`;
+                html += `<strong>Фамилия:</strong> ${foundName.surname}<br>`;
+                if (foundName.source.length > 0) {
+                    html += `<span style="font-size:13px;color:#8aa0c0;">Источник: ${foundName.source.join(', ')}</span>`;
+                }
+                html += `</div>`;
+            } else {
+                html += `<div class="warning-msg">⚠️ Имя и фамилия не найдены.<br>
+                Попробуйте поискать вручную по ссылкам ниже.</div>`;
+            }
+
+            if (breaches.length > 0) {
+                html += `<div class="section-title">🔓 Найден в утечках</div>`;
+                html += `<div class="success-msg">✅ Найден в ${breaches.length} утечках</div>`;
+            } else {
+                html += `<div class="section-title">🔓 Утечки</div>`;
+                html += `<div class="warning-msg">⚠️ Не найден в открытых базах утечек</div>`;
+            }
+
+            html += `<div class="section-title">🔗 Поиск в интернете</div>`;
+            html += `<div>`;
+            searchLinks.forEach(link => {
+                html += `<a href="${link.url}" target="_blank" class="link-btn">${link.name}</a>`;
+            });
+            html += `</div>`;
+
+            html += `<div class="section-title">📦 Сырые данные</div>`;
+            html += `<div id="rawJson">${JSON.stringify({ number: cleanNumber, country, operator, region, city, foundName, breaches }, null, 2)}</div>`;
+
+            showResult(html);
+
+        } catch (error) {
+            showError(`Ошибка: ${error.message}`);
+        } finally {
+            hideLoader();
+        }
+    }
+
+    // ---- ОБРАБОТЧИКИ ----
+    ipAnalyzeBtn.addEventListener('click', function() {
+        console.log('🖱️ Кнопка IP нажата');
+        const ip = ipInput.value.trim();
+        if (!ip) { alert('Введите IP-адрес'); return; }
+        analyzeIP(ip);
+    });
+
+    ipInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            console.log('⌨️ Enter в поле IP');
+            ipAnalyzeBtn.click();
+        }
+    });
+
+    phoneAnalyzeBtn.addEventListener('click', function() {
+        console.log('🖱️ Кнопка телефона нажата');
+        const phone = phoneInput.value.trim();
+        if (!phone) { alert('Введите номер телефона'); return; }
+        analyzePhone(phone);
+    });
+
+    phoneInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            console.log('⌨️ Enter в поле телефона');
+            phoneAnalyzeBtn.click();
+        }
+    });
+
+    // ---- АВТОЗАПУСК ----
+    window.addEventListener('load', function() {
+        console.log('🚀 Страница загружена, выполняю автозапуск...');
+        analyzeIP('8.8.8.8');
+    });
+
+    console.log('✅ Готово! Ожидаю действий пользователя.');
+</script>
+</body>
+</html>
