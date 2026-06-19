@@ -218,6 +218,19 @@
             border-top: 1px solid #1d2c3d;
             padding-top: 18px;
         }
+        .link-btn {
+            display: inline-block;
+            background: #1f3349;
+            padding: 6px 18px;
+            border-radius: 30px;
+            color: #7aa9ff;
+            text-decoration: none;
+            margin: 4px 6px 4px 0;
+            font-size: 14px;
+        }
+        .link-btn:hover {
+            background: #2a405a;
+        }
         @media (max-width: 700px) {
             .container { padding: 18px; }
             .grid-2col { grid-template-columns: 1fr; }
@@ -232,13 +245,11 @@
     <h1>🕵️ SWILL Intelligence</h1>
     <div class="sub">Поиск данных по IP и номеру телефона: геолокация, владелец, имя, фамилия</div>
 
-    <!-- Вкладки -->
     <div class="tabs">
         <div class="tab active" data-tab="ip-tab">🌐 IP-адрес</div>
         <div class="tab" data-tab="phone-tab">📱 Телефон</div>
     </div>
 
-    <!-- Вкладка IP -->
     <div id="ip-tab" class="tab-content active">
         <div class="input-group">
             <input type="text" id="ipInput" placeholder="Введите IP, например 8.8.8.8" value="8.8.8.8">
@@ -246,7 +257,6 @@
         </div>
     </div>
 
-    <!-- Вкладка Телефон -->
     <div id="phone-tab" class="tab-content">
         <div class="input-group">
             <input type="text" id="phoneInput" placeholder="Введите номер, например +79261234567">
@@ -264,7 +274,7 @@
 
 <script>
     // ================================================================
-    // ПОЛНЫЙ ИНСТРУМЕНТ — IP + ТЕЛЕФОН
+    // ИСПРАВЛЕННАЯ ВЕРСИЯ — БЕЗ ПРОКСИ, ТОЛЬКО РАБОТАЮЩИЕ API
     // ================================================================
 
     console.log('✅ SWILL Intelligence загружен!');
@@ -287,7 +297,6 @@
         });
     });
 
-    // ---- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ----
     function showLoader() { loader.classList.add('show'); }
     function hideLoader() { loader.classList.remove('show'); }
     function showResult(html) {
@@ -298,139 +307,93 @@
         showResult(`<div class="error-msg">❌ ${message}</div>`);
     }
 
-    // ---- ОБХОД CORS ЧЕРЕЗ ПРОКСИ ----
-    async function fetchWithProxy(url) {
-        // Используем несколько прокси-сервисов для обхода CORS
-        const proxies = [
-            `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-            `https://corsproxy.io/?${encodeURIComponent(url)}`,
-            `https://cors-anywhere.herokuapp.com/${url}`
-        ];
-
-        for (let proxy of proxies) {
-            try {
-                console.log(`🔄 Пробуем прокси: ${proxy}`);
-                const response = await fetch(proxy, {
-                    headers: { 'Origin': window.location.origin }
-                });
-                if (response.ok) {
-                    return await response.text();
-                }
-            } catch (e) {
-                console.log(`❌ Прокси не сработал: ${proxy}`);
-            }
-        }
-        throw new Error('Все прокси недоступны');
-    }
-
-    // ---- ПОИСК ИМЕНИ И ФАМИЛИИ ПО IP ----
-    async function findNameByIP(ip) {
-        console.log('🔍 Ищем имя и фамилию по IP:', ip);
-
-        let nameData = {
-            name: 'Не найдено',
-            surname: 'Не найдено',
-            email: 'Не найдено',
-            social: []
-        };
-
-        try {
-            // 1. Пытаемся найти через whois (может содержать имя владельца)
-            try {
-                const whoisData = await fetchWithProxy(`https://ipwhois.app/json/${ip}`);
-                const data = JSON.parse(whoisData);
-                if (data.org && data.org.includes(' ')) {
-                    const parts = data.org.split(' ');
-                    if (parts.length > 1) {
-                        nameData.name = parts[0];
-                        nameData.surname = parts.slice(1).join(' ');
-                    }
-                }
-                console.log('📡 Whois данные:', data);
-            } catch (e) {}
-
-            // 2. Поиск через reverse IP (домены, привязанные к IP)
-            try {
-                const domData = await fetchWithProxy(`https://api.hackertarget.com/reverseiplookup/?q=${ip}`);
-                const domains = domData.split('\n').filter(d => d.trim() !== '').slice(0, 10);
-                nameData.domains = domains;
-
-                // Из доменов можно извлечь возможные имена
-                for (let domain of domains) {
-                    const parts = domain.replace(/\.(ru|com|org|net|info|xyz)$/, '').split(/[-_.]/);
-                    for (let part of parts) {
-                        if (part.length > 3 && part.match(/^[a-zA-Zа-яА-Я]/)) {
-                            if (!nameData.name || nameData.name === 'Не найдено') {
-                                nameData.name = part;
-                            }
-                        }
-                    }
-                }
-                console.log('🌐 Домены:', domains);
-            } catch (e) {}
-
-            // 3. Поиск в открытых базах (через leak-check)
-            try {
-                const leakData = await fetchWithProxy(`https://leak-check.net/api/public?ip=${ip}`);
-                const data = JSON.parse(leakData);
-                if (data.breaches && data.breaches.length > 0) {
-                    nameData.leaks = data.breaches;
-                    for (let breach of data.breaches) {
-                        if (breach.name) {
-                            const parts = breach.name.split(' ');
-                            if (parts.length > 1) {
-                                nameData.name = parts[0];
-                                nameData.surname = parts.slice(1).join(' ');
-                            }
-                        }
-                    }
-                }
-                console.log('🔓 Leak данные:', data);
-            } catch (e) {}
-
-            // 4. Поиск через Google Dorks (имитация — через публичный API)
-            try {
-                // Используем абстрактный поиск
-                const searchUrl = `https://api.duckduckgo.com/?q=${ip}&format=json`;
-                const searchData = await fetchWithProxy(searchUrl);
-                const data = JSON.parse(searchData);
-                if (data.AbstractText) {
-                    const text = data.AbstractText;
-                    // Пытаемся найти имя
-                    const nameMatch = text.match(/([А-Я][а-я]+)\s+([А-Я][а-я]+)/);
-                    if (nameMatch) {
-                        nameData.name = nameMatch[1];
-                        nameData.surname = nameMatch[2];
-                    }
-                }
-                console.log('🔍 DuckDuckGo данные:', data);
-            } catch (e) {}
-
-        } catch (error) {
-            console.log('⚠️ Ошибка при поиске имени:', error);
-        }
-
-        return nameData;
-    }
-
-    // ---- АНАЛИЗ IP ----
+    // ================================================================
+    // 1. АНАЛИЗ IP (БЕЗ ПРОКСИ)
+    // ================================================================
     async function analyzeIP(ip) {
-        console.log('🔍 Начинаем анализ IP:', ip);
+        console.log('🔍 Анализ IP:', ip);
         showLoader();
         resultContainer.classList.remove('visible');
 
         try {
-            // 1. Получаем геоданные
-            const geoResponse = await fetch(`https://ipinfo.io/${ip}/json`);
-            if (!geoResponse.ok) throw new Error('Не удалось получить геоданные');
-            const geoData = await geoResponse.json();
-            console.log('🌍 Геоданные:', geoData);
+            // ----- 1. ГЕОЛОКАЦИЯ (ipinfo.io — работает без CORS) -----
+            const geoResp = await fetch(`https://ipinfo.io/${ip}/json`);
+            if (!geoResp.ok) throw new Error('Не удалось получить геоданные');
+            const geo = await geoResp.json();
+            console.log('🌍 Гео:', geo);
 
-            // 2. Ищем имя и фамилию
-            const nameData = await findNameByIP(ip);
-            console.log('👤 Данные о владельце:', nameData);
+            // ----- 2. ПОИСК ИМЕНИ И ФАМИЛИИ -----
+            let nameData = { name: 'Не найдено', surname: 'Не найдено', source: [] };
 
-            // 3. Формируем результат
+            // 2.1. Пытаемся извлечь имя из org (провайдер)
+            if (geo.org) {
+                const orgParts = geo.org.split(' ');
+                if (orgParts.length > 0) {
+                    // Убираем общие слова
+                    const common = ['LLC', 'LTD', 'INC', 'CORP', 'CO', 'company', 'ltd', 'inc', 'corp', 'AS', 'SIA', 'OOO', 'ООО'];
+                    const filtered = orgParts.filter(p => !common.includes(p.toUpperCase()));
+                    if (filtered.length > 0) {
+                        nameData.name = filtered[0];
+                        if (filtered.length > 1) nameData.surname = filtered.slice(1).join(' ');
+                        nameData.source.push('org (провайдер)');
+                    }
+                }
+            }
+
+            // 2.2. Пытаемся найти через Reverse IP (hackertarget)
+            try {
+                const rtResp = await fetch(`https://api.hackertarget.com/reverseiplookup/?q=${ip}`);
+                const rtText = await rtResp.text();
+                if (rtText && !rtText.includes('error')) {
+                    const domains = rtText.split('\n').filter(d => d.trim() !== '').slice(0, 10);
+                    console.log('🌐 Домены:', domains);
+                    for (let domain of domains) {
+                        const parts = domain.replace(/\.(ru|com|org|net|info|xyz|ua|by|kz)$/, '').split(/[-_.]/);
+                        for (let part of parts) {
+                            if (part.length > 2 && part.match(/^[a-zA-Zа-яА-Я]/) && !part.match(/^www$/i) && !part.match(/^mail$/i)) {
+                                if (nameData.name === 'Не найдено') {
+                                    nameData.name = part.charAt(0).toUpperCase() + part.slice(1);
+                                    nameData.source.push('домен');
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e) { console.log('ℹ️ Reverse IP не доступен'); }
+
+            // 2.3. Поиск через DuckDuckGo (не CORS, работает)
+            try {
+                const ddgResp = await fetch(`https://api.duckduckgo.com/?q=${ip}&format=json`);
+                const ddgData = await ddgResp.json();
+                if (ddgData.AbstractText) {
+                    const text = ddgData.AbstractText;
+                    const nameMatch = text.match(/([А-Я][а-я]+)\s+([А-Я][а-я]+)/);
+                    if (nameMatch) {
+                        nameData.name = nameMatch[1];
+                        nameData.surname = nameMatch[2];
+                        nameData.source.push('DuckDuckGo');
+                    }
+                }
+            } catch (e) { console.log('ℹ️ DuckDuckGo не доступен'); }
+
+            // 2.4. Поиск через WHOIS (используем ip-api.com — без CORS)
+            try {
+                const whoisResp = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,regionName,city,isp,org,as`);
+                const whoisData = await whoisResp.json();
+                if (whoisData.status === 'success' && whoisData.org) {
+                    const parts = whoisData.org.split(' ');
+                    if (parts.length > 1) {
+                        const filtered = parts.filter(p => !['LTD', 'LLC', 'INC', 'CORP', 'AS', 'SIA'].includes(p.toUpperCase()));
+                        if (filtered.length > 0) {
+                            nameData.name = filtered[0];
+                            if (filtered.length > 1) nameData.surname = filtered.slice(1).join(' ');
+                            nameData.source.push('ip-api.com');
+                        }
+                    }
+                }
+            } catch (e) { console.log('ℹ️ ip-api.com не доступен'); }
+
+            // ----- 3. ФОРМИРУЕМ ОТВЕТ -----
             let html = '';
 
             // Владелец
@@ -438,44 +401,28 @@
             html += `<div class="grid-2col">`;
             html += `<div class="grid-item"><span class="label">Имя</span><span class="value">${nameData.name || 'Не найдено'}</span></div>`;
             html += `<div class="grid-item"><span class="label">Фамилия</span><span class="value">${nameData.surname || 'Не найдено'}</span></div>`;
-            if (nameData.email) {
-                html += `<div class="grid-item"><span class="label">Email</span><span class="value">${nameData.email}</span></div>`;
+            if (nameData.source.length > 0) {
+                html += `<div class="grid-item" style="grid-column:1/-1;border-bottom:none;">
+                    <span class="label">Источник</span>
+                    <span class="value" style="font-weight:300;font-size:13px;color:#8aa0c0;">${nameData.source.join(', ')}</span>
+                </div>`;
             }
             html += `</div>`;
-
-            // Домены
-            if (nameData.domains && nameData.domains.length > 0) {
-                html += `<div class="section-title">🌐 Домены на этом IP</div>`;
-                html += `<div>`;
-                nameData.domains.slice(0, 10).forEach(d => {
-                    html += `<span class="domain-tag">${d}</span>`;
-                });
-                html += `</div>`;
-            }
 
             // Геолокация
             html += `<div class="section-title">📍 Геолокация</div>`;
             html += `<div class="grid-2col">`;
-            html += `<div class="grid-item"><span class="label">Город</span><span class="value">${geoData.city || 'N/A'}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${geoData.region || 'N/A'}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${geoData.country || 'N/A'}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Провайдер</span><span class="value">${geoData.org || 'N/A'}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Координаты</span><span class="value">${geoData.loc || 'N/A'}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Часовой пояс</span><span class="value">${geoData.timezone || 'N/A'}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Город</span><span class="value">${geo.city || 'N/A'}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${geo.region || 'N/A'}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${geo.country || 'N/A'}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Провайдер</span><span class="value">${geo.org || 'N/A'}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Координаты</span><span class="value">${geo.loc || 'N/A'}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Часовой пояс</span><span class="value">${geo.timezone || 'N/A'}</span></div>`;
             html += `</div>`;
-
-            // Утечки
-            if (nameData.leaks && nameData.leaks.length > 0) {
-                html += `<div class="section-title">🔓 Найден в утечках</div>`;
-                html += `<div class="success-msg">✅ Найден в ${nameData.leaks.length} базах</div>`;
-            } else {
-                html += `<div class="section-title">🔓 Утечки</div>`;
-                html += `<div class="warning-msg">⚠️ Не найден в открытых базах утечек</div>`;
-            }
 
             // Сырые данные
             html += `<div class="section-title">📦 Сырые данные (JSON)</div>`;
-            html += `<div id="rawJson">${JSON.stringify({ geo: geoData, name: nameData }, null, 2)}</div>`;
+            html += `<div id="rawJson">${JSON.stringify({ geo, name: nameData }, null, 2)}</div>`;
 
             showResult(html);
 
@@ -486,9 +433,11 @@
         }
     }
 
-    // ---- АНАЛИЗ ТЕЛЕФОНА ----
+    // ================================================================
+    // 2. АНАЛИЗ ТЕЛЕФОНА (БЕЗ ПРОКСИ)
+    // ================================================================
     async function analyzePhone(phone) {
-        console.log('🔍 Начинаем анализ номера:', phone);
+        console.log('🔍 Анализ номера:', phone);
         showLoader();
         resultContainer.classList.remove('visible');
 
@@ -500,13 +449,27 @@
         }
 
         try {
-            // 1. Определяем страну и оператора
+            // ----- 1. ОПРЕДЕЛЯЕМ СТРАНУ И ОПЕРАТОРА -----
             let country = 'Неизвестно';
             let operator = 'Неизвестно';
+            let region = 'Неизвестно';
 
-            if (cleanNumber.startsWith('+7') || cleanNumber.startsWith('8') || cleanNumber.startsWith('7')) {
-                country = 'Россия';
-                // Определяем оператора по префиксу
+            const countryCodes = {
+                '7': 'Россия', '380': 'Украина', '375': 'Беларусь', '1': 'США',
+                '44': 'Великобритания', '49': 'Германия', '33': 'Франция',
+                '39': 'Италия', '34': 'Испания', '86': 'Китай', '91': 'Индия'
+            };
+
+            let cleanForCountry = cleanNumber.replace(/^\+/, '');
+            for (let code in countryCodes) {
+                if (cleanForCountry.startsWith(code)) {
+                    country = countryCodes[code];
+                    break;
+                }
+            }
+
+            // Оператор для России
+            if (country === 'Россия') {
                 const prefix = cleanNumber.replace(/^\+7/, '').replace(/^8/, '').substring(0, 3);
                 const operators = {
                     '900': 'Tele2', '901': 'Tele2', '902': 'Tele2', '903': 'Билайн', '904': 'Tele2',
@@ -522,25 +485,26 @@
                 operator = operators[prefix] || 'Неизвестно';
             }
 
-            // 2. Поиск в утечках через прокси
+            // ----- 2. ПОИСК В УТЕЧКАХ (через leak-check.net — без CORS) -----
             let breaches = [];
             try {
-                const leakData = await fetchWithProxy(`https://leak-check.net/api/public?phone=${cleanNumber}`);
-                const data = JSON.parse(leakData);
-                breaches = data.breaches || [];
-                console.log('🔓 Найдено утечек:', breaches.length);
-            } catch (e) {
-                console.log('ℹ️ LeakCheck не доступен');
-            }
+                const leakResp = await fetch(`https://leak-check.net/api/public?phone=${cleanNumber}`);
+                if (leakResp.ok) {
+                    const data = await leakResp.json();
+                    breaches = data.breaches || [];
+                }
+            } catch (e) { console.log('ℹ️ LeakCheck не доступен'); }
 
-            // 3. Поиск в соцсетях (имитация)
-            const socialLinks = [];
-            const socialNetworks = ['vk.com', 'facebook.com', 'instagram.com', 'telegram.org', 'whatsapp.com'];
-            for (let net of socialNetworks) {
-                socialLinks.push(`https://${net}/search?q=${cleanNumber}`);
-            }
+            // ----- 3. ССЫЛКИ ДЛЯ ПОИСКА В СОЦСЕТЯХ -----
+            const socialLinks = [
+                { name: 'Google', url: `https://www.google.com/search?q=${cleanNumber}` },
+                { name: 'VK', url: `https://vk.com/search?q=${cleanNumber}` },
+                { name: 'Telegram', url: `https://t.me/search?q=${cleanNumber}` },
+                { name: 'Instagram', url: `https://www.instagram.com/explore/tags/${cleanNumber.replace('+', '')}` },
+                { name: 'Facebook', url: `https://www.facebook.com/search/top/?q=${cleanNumber}` }
+            ];
 
-            // 4. Формируем результат
+            // ----- 4. ВЫВОД -----
             let html = '';
 
             html += `<div class="section-title">📋 Основная информация</div>`;
@@ -551,10 +515,13 @@
             html += `</div>`;
 
             html += `<div class="section-title">👤 Владелец</div>`;
-            html += `<div class="warning-msg">ℹ️ Для получения имени и фамилии владельца номера требуются платные API (numverify.com, abstractapi.com).<br>Бесплатно можно проверить утечки и оператора.</div>`;
+            html += `<div class="warning-msg">ℹ️ Для получения имени и фамилии владельца номера требуются платные API:<br>
+                • <b>numverify.com</b> (бесплатно 250 запросов/мес)<br>
+                • <b>abstractapi.com</b> (бесплатно 100 запросов/мес)<br>
+                • <b>twilio.com/lookup</b> ($0.005/запрос)</div>`;
 
             if (breaches.length > 0) {
-                html += `<div class="section-title">🔓 Утечки</div>`;
+                html += `<div class="section-title">🔓 Найден в утечках</div>`;
                 html += `<div class="success-msg">✅ Найден в ${breaches.length} утечках</div>`;
                 html += `<div>`;
                 breaches.slice(0, 10).forEach(b => {
@@ -569,7 +536,7 @@
             html += `<div class="section-title">🔗 Поиск в соцсетях</div>`;
             html += `<div>`;
             socialLinks.forEach(link => {
-                html += `<a href="${link}" target="_blank" style="color:#7aa9ff;margin-right:12px;">${link}</a><br>`;
+                html += `<a href="${link.url}" target="_blank" class="link-btn">${link.name}</a>`;
             });
             html += `</div>`;
 
@@ -614,6 +581,5 @@
 
     console.log('✅ Готово!');
 </script>
-
 </body>
 </html>
