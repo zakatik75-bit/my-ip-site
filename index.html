@@ -43,6 +43,7 @@
             margin-bottom: 20px;
             border-bottom: 1px solid #2a3a4a;
             padding-bottom: 12px;
+            flex-wrap: wrap;
         }
         .tab {
             padding: 8px 24px;
@@ -231,11 +232,18 @@
         .link-btn:hover {
             background: #2a405a;
         }
+        .found-name {
+            background: #1a2a1a;
+            border-left: 3px solid #66ff88;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-top: 6px;
+            font-size: 16px;
+        }
         @media (max-width: 700px) {
             .container { padding: 18px; }
             .grid-2col { grid-template-columns: 1fr; }
             .input-group input { min-width: 140px; }
-            .tabs { flex-wrap: wrap; }
         }
     </style>
 </head>
@@ -274,7 +282,7 @@
 
 <script>
     // ================================================================
-    // ИСПРАВЛЕННАЯ ВЕРСИЯ — ВСЕ API ЧЕРЕЗ HTTPS, CORS УЧТЁН
+    // ИСПРАВЛЕННАЯ ВЕРСИЯ — БЕЗ IP-API.COM (ОШИБКА 403)
     // ================================================================
 
     console.log('✅ SWILL Intelligence загружен!');
@@ -307,7 +315,7 @@
     }
 
     // ================================================================
-    // 1. АНАЛИЗ IP (ВСЕ ЗАПРОСЫ ЧЕРЕЗ HTTPS)
+    // 1. АНАЛИЗ IP (БЕЗ IP-API.COM)
     // ================================================================
     async function analyzeIP(ip) {
         console.log('🔍 Анализ IP:', ip);
@@ -315,7 +323,7 @@
         resultContainer.classList.remove('visible');
 
         try {
-            // ----- 1. ГЕОЛОКАЦИЯ (ipinfo.io — HTTPS) -----
+            // ----- 1. ГЕОЛОКАЦИЯ (ipinfo.io — работает) -----
             const geoResp = await fetch(`https://ipinfo.io/${ip}/json`);
             if (!geoResp.ok) throw new Error('Не удалось получить геоданные');
             const geo = await geoResp.json();
@@ -327,7 +335,7 @@
             // 2.1. Из org (провайдер)
             if (geo.org) {
                 const orgParts = geo.org.split(' ');
-                const common = ['LLC', 'LTD', 'INC', 'CORP', 'CO', 'company', 'ltd', 'inc', 'corp', 'AS', 'SIA', 'OOO', 'ООО', 'ГБУ', 'ГУП', 'МУП', 'ФГУП'];
+                const common = ['LLC', 'LTD', 'INC', 'CORP', 'CO', 'ltd', 'inc', 'corp', 'AS', 'SIA', 'OOO', 'ООО', 'ГБУ', 'ГУП', 'МУП', 'ФГУП', 'FOR', 'UNITY'];
                 const filtered = orgParts.filter(p => !common.includes(p.toUpperCase()));
                 if (filtered.length > 0) {
                     nameData.name = filtered[0];
@@ -336,7 +344,7 @@
                 }
             }
 
-            // 2.2. Reverse IP (hackertarget — HTTPS)
+            // 2.2. Reverse IP (hackertarget)
             try {
                 const rtResp = await fetch(`https://api.hackertarget.com/reverseiplookup/?q=${ip}`);
                 const rtText = await rtResp.text();
@@ -357,29 +365,13 @@
                 }
             } catch (e) { console.log('ℹ️ Reverse IP не доступен'); }
 
-            // 2.3. WHOIS через ip-api.com (ТОЛЬКО HTTPS)
-            try {
-                const whoisResp = await fetch(`https://ip-api.com/json/${ip}?fields=status,country,regionName,city,isp,org,as`);
-                const whoisData = await whoisResp.json();
-                if (whoisData.status === 'success' && whoisData.org) {
-                    const parts = whoisData.org.split(' ');
-                    const common = ['LTD', 'LLC', 'INC', 'CORP', 'AS', 'SIA', 'OOO', 'ООО', 'ГБУ', 'ГУП', 'МУП', 'ФГУП'];
-                    const filtered = parts.filter(p => !common.includes(p.toUpperCase()));
-                    if (filtered.length > 0 && nameData.name === 'Не найдено') {
-                        nameData.name = filtered[0];
-                        if (filtered.length > 1) nameData.surname = filtered.slice(1).join(' ');
-                        nameData.source.push('ip-api.com');
-                    }
-                }
-            } catch (e) { console.log('ℹ️ ip-api.com не доступен'); }
-
             // ----- 3. ФОРМИРУЕМ ОТВЕТ -----
             let html = '';
 
             html += `<div class="section-title">👤 Владелец (по IP)</div>`;
             html += `<div class="grid-2col">`;
-            html += `<div class="grid-item"><span class="label">Имя</span><span class="value">${nameData.name || 'Не найдено'}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Фамилия</span><span class="value">${nameData.surname || 'Не найдено'}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Имя</span><span class="value">${nameData.name}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Фамилия</span><span class="value">${nameData.surname}</span></div>`;
             if (nameData.source.length > 0) {
                 html += `<div class="grid-item" style="grid-column:1/-1;border-bottom:none;">
                     <span class="label">Источник</span>
@@ -411,7 +403,7 @@
     }
 
     // ================================================================
-    // 2. АНАЛИЗ ТЕЛЕФОНА (ПОЛНЫЙ ПРОБИВ)
+    // 2. АНАЛИЗ ТЕЛЕФОНА
     // ================================================================
     async function analyzePhone(phone) {
         console.log('🔍 Анализ номера:', phone);
@@ -426,24 +418,17 @@
         }
 
         try {
-            // ----- 1. ОПРЕДЕЛЯЕМ СТРАНУ -----
+            // ----- 1. СТРАНА И ОПЕРАТОР -----
             let country = 'Неизвестно';
             let operator = 'Неизвестно';
             let region = 'Неизвестно';
             let city = 'Неизвестно';
-            let location = 'Неизвестно';
 
             const countryCodes = {
                 '7': 'Россия', '380': 'Украина', '375': 'Беларусь', '1': 'США',
                 '44': 'Великобритания', '49': 'Германия', '33': 'Франция',
                 '39': 'Италия', '34': 'Испания', '86': 'Китай', '91': 'Индия',
-                '81': 'Япония', '82': 'Корея', '55': 'Бразилия', '61': 'Австралия',
-                '31': 'Нидерланды', '46': 'Швеция', '47': 'Норвегия', '45': 'Дания',
-                '358': 'Финляндия', '48': 'Польша', '420': 'Чехия', '36': 'Венгрия',
-                '40': 'Румыния', '30': 'Греция', '90': 'Турция', '972': 'Израиль',
-                '966': 'Саудовская Аравия', '971': 'ОАЭ', '92': 'Пакистан',
-                '880': 'Бангладеш', '234': 'Нигерия', '27': 'ЮАР', '54': 'Аргентина',
-                '56': 'Чили', '57': 'Колумбия', '52': 'Мексика'
+                '81': 'Япония', '82': 'Корея', '55': 'Бразилия', '61': 'Австралия'
             };
 
             let cleanForCountry = cleanNumber.replace(/^\+/, '');
@@ -454,78 +439,78 @@
                 }
             }
 
-            // ----- 2. ОПРЕДЕЛЯЕМ ОПЕРАТОРА (РОССИЯ) -----
             if (country === 'Россия') {
                 const prefix = cleanNumber.replace(/^\+7/, '').replace(/^8/, '').substring(0, 3);
                 const operators = {
                     '900': 'Tele2', '901': 'Tele2', '902': 'Tele2', '903': 'Билайн', '904': 'Tele2',
                     '905': 'Билайн', '906': 'Билайн', '908': 'Билайн', '909': 'Билайн', '910': 'МТС',
-                    '911': 'МТС', '912': 'МТС', '913': 'МТС', '914': 'МТС', '915': 'МТС',
-                    '916': 'МТС', '917': 'МТС', '918': 'МТС', '919': 'МТС', '920': 'Мегафон',
-                    '921': 'Мегафон', '922': 'Мегафон', '923': 'Мегафон', '924': 'Мегафон',
-                    '925': 'Мегафон', '926': 'Мегафон', '927': 'Мегафон', '928': 'Мегафон',
-                    '929': 'Мегафон', '930': 'МТС', '931': 'МТС', '932': 'МТС', '933': 'МТС',
-                    '934': 'МТС', '935': 'МТС', '936': 'МТС', '937': 'МТС', '938': 'МТС',
-                    '939': 'МТС', '950': 'МТС', '951': 'МТС', '952': 'МТС', '953': 'МТС',
-                    '954': 'МТС', '955': 'МТС', '956': 'МТС', '957': 'МТС', '958': 'МТС',
-                    '959': 'МТС', '960': 'Мегафон', '961': 'Мегафон', '962': 'Мегафон',
-                    '963': 'Мегафон', '964': 'Мегафон', '965': 'Мегафон', '966': 'Мегафон',
-                    '967': 'Мегафон', '968': 'Мегафон', '969': 'Мегафон', '970': 'Билайн',
-                    '971': 'Билайн', '972': 'Билайн', '973': 'Билайн', '974': 'Билайн',
-                    '975': 'Билайн', '976': 'Билайн', '977': 'Билайн', '978': 'Билайн',
-                    '979': 'Билайн', '980': 'Tele2', '981': 'Tele2', '982': 'Tele2',
-                    '983': 'Tele2', '984': 'Tele2', '985': 'Tele2', '986': 'Tele2',
-                    '987': 'Tele2', '988': 'Tele2', '989': 'Tele2', '990': 'МТС',
-                    '991': 'МТС', '992': 'МТС', '993': 'МТС', '994': 'МТС', '995': 'МТС',
-                    '996': 'МТС', '997': 'МТС', '998': 'МТС', '999': 'МТС'
+                    '916': 'МТС', '920': 'Мегафон', '921': 'Мегафон', '925': 'Мегафон',
+                    '930': 'МТС', '950': 'МТС', '960': 'Мегафон', '970': 'Билайн',
+                    '980': 'Tele2', '981': 'Tele2', '982': 'Tele2', '990': 'МТС', '999': 'МТС'
                 };
                 operator = operators[prefix] || 'Неизвестно';
 
-                // Определяем регион по коду
                 const regionMap = {
                     '903': 'Москва', '905': 'Москва', '906': 'Москва', '910': 'Центральный',
                     '916': 'Москва', '920': 'Москва', '925': 'Москва', '926': 'Москва',
                     '929': 'Москва', '930': 'Центральный', '950': 'Центральный',
-                    '960': 'Северо-Запад', '961': 'Северо-Запад', '962': 'Северо-Запад',
-                    '963': 'Северо-Запад', '964': 'Северо-Запад', '965': 'Северо-Запад',
-                    '966': 'Северо-Запад', '967': 'Северо-Запад', '968': 'Северо-Запад',
-                    '969': 'Северо-Запад', '970': 'Южный', '971': 'Южный', '972': 'Южный',
-                    '973': 'Южный', '974': 'Южный', '975': 'Южный', '976': 'Южный',
-                    '977': 'Южный', '978': 'Южный', '979': 'Южный', '980': 'Поволжье',
-                    '981': 'Поволжье', '982': 'Поволжье', '983': 'Поволжье', '984': 'Поволжье',
-                    '985': 'Поволжье', '986': 'Поволжье', '987': 'Поволжье', '988': 'Поволжье',
-                    '989': 'Поволжье', '990': 'Урал', '991': 'Урал', '992': 'Урал',
-                    '993': 'Урал', '994': 'Урал', '995': 'Урал', '996': 'Урал',
-                    '997': 'Урал', '998': 'Урал', '999': 'Урал'
+                    '960': 'Северо-Запад', '970': 'Южный', '980': 'Поволжье', '990': 'Урал'
                 };
                 region = regionMap[prefix] || 'Неизвестно';
                 city = region;
             }
 
-            // ----- 3. ПОИСК В УТЕЧКАХ (leak-check.net — HTTPS) -----
+            // ----- 2. ПОИСК ИМЕНИ (БЕСПЛАТНО) -----
+            let foundName = { name: 'Не найдено', surname: 'Не найдено', source: [] };
+
+            // 2.1. Утечки
             let breaches = [];
             try {
                 const leakResp = await fetch(`https://leak-check.net/api/public?phone=${cleanNumber}`);
                 if (leakResp.ok) {
                     const data = await leakResp.json();
                     breaches = data.breaches || [];
-                    console.log('🔓 Найдено утечек:', breaches.length);
+                    if (data.breaches && data.breaches.length > 0) {
+                        foundName.source.push('leak-check');
+                        for (let breach of data.breaches) {
+                            if (breach.includes(' ') && breach.match(/[а-яА-Я]/)) {
+                                const parts = breach.split(' ');
+                                if (parts.length >= 2) {
+                                    foundName.name = parts[0];
+                                    foundName.surname = parts.slice(1).join(' ');
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
             } catch (e) { console.log('ℹ️ LeakCheck не доступен'); }
 
-            // ----- 4. ГЕНЕРАЦИЯ ССЫЛОК ДЛЯ ПОИСКА -----
+            // 2.2. VK API
+            try {
+                const vkResp = await fetch(`https://api.vk.com/method/users.search?q=${cleanNumber}&v=5.131`);
+                if (vkResp.ok) {
+                    const data = await vkResp.json();
+                    if (data.response && data.response.items && data.response.items.length > 0) {
+                        const user = data.response.items[0];
+                        foundName.name = user.first_name || 'Не найдено';
+                        foundName.surname = user.last_name || 'Не найдено';
+                        foundName.source.push('VK');
+                    }
+                }
+            } catch (e) { console.log('ℹ️ VK API не доступен'); }
+
+            // ----- 3. ССЫЛКИ -----
             const searchLinks = [
                 { name: 'Google', url: `https://www.google.com/search?q=${cleanNumber}` },
                 { name: 'Yandex', url: `https://yandex.ru/search/?text=${cleanNumber}` },
                 { name: 'VK', url: `https://vk.com/search?q=${cleanNumber}` },
                 { name: 'Telegram', url: `https://t.me/search?q=${cleanNumber}` },
                 { name: 'Instagram', url: `https://www.instagram.com/explore/tags/${cleanNumber.replace('+', '')}` },
-                { name: 'Facebook', url: `https://www.facebook.com/search/top/?q=${cleanNumber}` },
-                { name: '2GIS', url: `https://2gis.ru/search/${cleanNumber}` },
-                { name: 'Avito', url: `https://www.avito.ru/all?q=${cleanNumber}` }
+                { name: 'Facebook', url: `https://www.facebook.com/search/top/?q=${cleanNumber}` }
             ];
 
-            // ----- 5. ВЫВОД -----
+            // ----- 4. ВЫВОД -----
             let html = '';
 
             html += `<div class="section-title">📋 Основная информация</div>`;
@@ -539,10 +524,19 @@
             html += `</div>`;
 
             html += `<div class="section-title">👤 Владелец</div>`;
-            html += `<div class="warning-msg">ℹ️ Для получения имени и фамилии владельца номера требуются платные API:<br>
-                • <b>numverify.com</b> (бесплатно 250 запросов/мес)<br>
-                • <b>abstractapi.com</b> (бесплатно 100 запросов/мес)<br>
-                • <b>twilio.com/lookup</b> ($0.005/запрос)</div>`;
+            if (foundName.name !== 'Не найдено') {
+                html += `<div class="found-name">`;
+                html += `<strong>Имя:</strong> ${foundName.name}<br>`;
+                html += `<strong>Фамилия:</strong> ${foundName.surname}<br>`;
+                if (foundName.source.length > 0) {
+                    html += `<span style="font-size:13px;color:#8aa0c0;">Источник: ${foundName.source.join(', ')}</span>`;
+                }
+                html += `</div>`;
+            } else {
+                html += `<div class="warning-msg">⚠️ Имя и фамилия не найдены в открытых источниках.<br>
+                Попробуйте поискать вручную по ссылкам ниже или используйте платные API:
+                <b>numverify.com</b>, <b>abstractapi.com</b>, <b>twilio.com/lookup</b></div>`;
+            }
 
             if (breaches.length > 0) {
                 html += `<div class="section-title">🔓 Найден в утечках</div>`;
@@ -565,7 +559,15 @@
             html += `</div>`;
 
             html += `<div class="section-title">📦 Сырые данные</div>`;
-            html += `<div id="rawJson">${JSON.stringify({ number: cleanNumber, country, operator, region, city, breaches }, null, 2)}</div>`;
+            html += `<div id="rawJson">${JSON.stringify({
+                number: cleanNumber,
+                country,
+                operator,
+                region,
+                city,
+                foundName,
+                breaches
+            }, null, 2)}</div>`;
 
             showResult(html);
 
@@ -597,7 +599,6 @@
         if (e.key === 'Enter') phoneAnalyzeBtn.click();
     });
 
-    // ---- АВТОЗАПУСК ----
     window.addEventListener('load', () => {
         console.log('🚀 Страница загружена');
         analyzeIP('8.8.8.8');
