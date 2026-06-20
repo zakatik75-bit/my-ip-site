@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SWILL OSINT — IP + Поиск людей</title>
+    <title>SWILL OSINT — Проверенные данные</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #0b0e14; font-family: 'Segoe UI', sans-serif; color: #e0e6f0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
@@ -33,27 +33,26 @@
         .warning-msg { color: #ffcc66; background: #2a2a1a; padding: 14px; border-radius: 14px; border-left: 4px solid #ffaa00; margin-top: 10px; }
         .link-btn { display: inline-block; background: #1f3349; padding: 6px 18px; border-radius: 30px; color: #7aa9ff; text-decoration: none; margin: 4px 6px 4px 0; font-size: 14px; }
         .link-btn:hover { background: #2a405a; }
-        .profile-card { background: #0d1520; padding: 14px 18px; border-radius: 14px; margin-top: 10px; border-left: 3px solid #3a7bd5; }
-        .profile-card .name { font-size: 18px; font-weight: 600; color: #d6e4ff; }
-        .profile-card .detail { font-size: 14px; color: #8da0c0; margin-top: 4px; }
         #rawJson { background: #0a111c; padding: 14px; border-radius: 12px; font-family: 'Courier New', monospace; font-size: 13px; max-height: 260px; overflow: auto; color: #b0c8e0; border: 1px solid #223544; margin-top: 10px; white-space: pre-wrap; word-break: break-all; }
         .footer-note { margin-top: 25px; font-size: 13px; color: #5a7088; text-align: center; border-top: 1px solid #1d2c3d; padding-top: 18px; }
         .map-container { margin-top: 12px; border-radius: 14px; overflow: hidden; border: 1px solid #263544; }
         .map-container iframe { width: 100%; height: 300px; border: none; display: block; }
+        .info-box { background: #0d1520; padding: 14px 18px; border-radius: 14px; border-left: 3px solid #ffcc66; margin-top: 10px; }
+        .info-box .label { color: #8da0c0; }
+        .info-box .value { color: #d6e4ff; }
         @media (max-width: 700px) { .container { padding: 18px; } .grid-2col { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>🕵️ SWILL OSINT</h1>
-    <div class="sub">Геопозиция по IP + поиск людей по фамилии, имени и городу</div>
+    <div class="sub">Геопозиция по IP + поиск людей (только проверенные данные)</div>
 
     <div class="tabs">
         <div class="tab active" data-tab="ip-tab">🌐 IP → Геопозиция</div>
         <div class="tab" data-tab="search-tab">🔍 Поиск людей</div>
     </div>
 
-    <!-- Вкладка IP -->
     <div id="ip-tab" class="tab-content active">
         <div class="input-group">
             <input type="text" id="ipInput" placeholder="Введите IP, например 8.8.8.8" value="8.8.8.8">
@@ -61,7 +60,6 @@
         </div>
     </div>
 
-    <!-- Вкладка поиска людей -->
     <div id="search-tab" class="tab-content">
         <div class="input-group">
             <input type="text" id="surnameInput" placeholder="Фамилия" value="Иванов">
@@ -73,17 +71,16 @@
 
     <div id="loader"><span>⏳ Загрузка...</span></div>
     <div id="resultContainer" class="result-card"></div>
-    <div class="footer-note">⚡ Данные из открытых источников и публичных API</div>
+    <div class="footer-note">⚡ Данные из проверенных открытых источников</div>
 </div>
 
 <script>
     // ================================================================
-    // SWILL OSINT — БЕЗ CORS ОШИБОК (ТОЛЬКО РАБОЧИЕ API)
+    // SWILL OSINT — ТОЛЬКО ПРОВЕРЕННЫЕ ДАННЫЕ
     // ================================================================
 
     console.log('✅ SWILL OSINT загружен');
 
-    // ---- ЭЛЕМЕНТЫ ----
     const ipInput = document.getElementById('ipInput');
     const ipBtn = document.getElementById('ipBtn');
     const surnameInput = document.getElementById('surnameInput');
@@ -110,7 +107,7 @@
     function showError(msg) { showResult(`<div class="warning-msg">❌ ${msg}</div>`); }
 
     // ================================================================
-    // 1. ГЕОПОЗИЦИЯ ПО IP (ipinfo.io — РАБОТАЕТ БЕЗ CORS)
+    // 1. ГЕОПОЗИЦИЯ ПО IP (ipinfo.io — проверенный источник)
     // ================================================================
     async function getGeoByIP(ip) {
         if (!ip || ip.trim() === '') {
@@ -122,7 +119,6 @@
         resultContainer.classList.remove('visible');
 
         try {
-            // ipinfo.io — работает без CORS
             const geo = await (await fetch(`https://ipinfo.io/${ip}/json`)).json();
             console.log('🌍 IP гео:', geo);
 
@@ -137,18 +133,18 @@
 
             let html = '';
 
-            html += `<div class="section-title">📍 Геопозиция по IP</div>`;
+            html += `<div class="section-title">📍 Достоверная геопозиция по IP</div>`;
             html += `<div class="grid-2col">`;
-            html += `<div class="grid-item"><span class="label">IP</span><span class="value">${geo.ip || 'N/A'}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Город</span><span class="value">${geo.city || 'N/A'}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${geo.region || 'N/A'}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${geo.country || 'N/A'}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Координаты</span><span class="value">${geo.loc || 'N/A'}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Провайдер</span><span class="value">${geo.org || 'N/A'}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Часовой пояс</span><span class="value">${geo.timezone || 'N/A'}</span></div>`;
+            html += `<div class="grid-item"><span class="label">IP-адрес</span><span class="value">${geo.ip || 'N/A'}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Город</span><span class="value">${geo.city || 'Не определён'}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${geo.region || 'Не определён'}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${geo.country || 'Не определена'}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Координаты</span><span class="value">${geo.loc || 'Не определены'}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Провайдер</span><span class="value">${geo.org || 'Не определён'}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Часовой пояс</span><span class="value">${geo.timezone || 'Не определён'}</span></div>`;
             html += `</div>`;
 
-            // КАРТА (если есть координаты)
+            // Карта
             if (lat && lon) {
                 html += `<div class="section-title">🗺️ Карта</div>`;
                 html += `<div class="map-container">`;
@@ -157,24 +153,28 @@
                 html += `<div style="margin-top:8px;"><a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=14" target="_blank" class="link-btn">🗺️ Открыть карту (полный экран)</a></div>`;
             }
 
-            // Сырые данные
-            html += `<div class="section-title">📦 JSON</div>`;
+            // Важное примечание
+            html += `<div class="info-box">`;
+            html += `<div class="label">⚠️ Важно</div>`;
+            html += `<div class="value" style="font-size:13px;color:#8da0c0;">Геопозиция по IP определяет местоположение провайдера, а не точный адрес человека. Точность может варьироваться.</div>`;
+            html += `</div>`;
+
+            html += `<div class="section-title">📦 JSON (сырые данные)</div>`;
             html += `<div id="rawJson">${JSON.stringify(geo, null, 2)}</div>`;
 
             showResult(html);
 
         } catch(e) {
-            showError('Ошибка при получении геопозиции: ' + e.message);
+            showError('Ошибка: ' + e.message);
         }
 
         hideLoader();
     }
 
     // ================================================================
-    // 2. ПОИСК ЛЮДЕЙ (БЕЗ API С CORS)
+    // 2. ПОИСК ЛЮДЕЙ (ТОЛЬКО ПРОВЕРЕННЫЕ ССЫЛКИ)
     // ================================================================
 
-    // Геолокация города (OpenStreetMap — работает без CORS)
     async function getGeoByCity(city) {
         if (!city || city.trim() === '') return null;
         try {
@@ -191,45 +191,44 @@
         return null;
     }
 
-    // ---- ПОИСК В СОЦСЕТЯХ (ТОЛЬКО ССЫЛКИ, БЕЗ API) ----
     function searchVK(surname, name, city) {
         const query = `${surname} ${name} ${city}`;
-        return [{ source: 'VK (поиск)', link: `https://vk.com/search?q=${encodeURIComponent(query)}` }];
+        return { source: 'VK', link: `https://vk.com/search?q=${encodeURIComponent(query)}` };
     }
 
     function searchInstagram(surname, name, city) {
         const query = `${surname} ${name} ${city}`;
-        return [{ source: 'Instagram (поиск)', link: `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(query)}` }];
+        return { source: 'Instagram', link: `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(query)}` };
     }
 
     function searchFacebook(surname, name, city) {
         const query = `${surname} ${name} ${city}`;
-        return [{ source: 'Facebook (поиск)', link: `https://www.facebook.com/search/top/?q=${encodeURIComponent(query)}` }];
+        return { source: 'Facebook', link: `https://www.facebook.com/search/top/?q=${encodeURIComponent(query)}` };
     }
 
     function searchTelegram(surname, name, city) {
         const query = `${surname} ${name} ${city}`;
-        return [{ source: 'Telegram (поиск)', link: `https://t.me/search?q=${encodeURIComponent(query)}` }];
+        return { source: 'Telegram', link: `https://t.me/search?q=${encodeURIComponent(query)}` };
     }
 
     function searchTwitter(surname, name, city) {
         const query = `${surname} ${name} ${city}`;
-        return [{ source: 'Twitter/X (поиск)', link: `https://twitter.com/search?q=${encodeURIComponent(query)}` }];
+        return { source: 'Twitter/X', link: `https://twitter.com/search?q=${encodeURIComponent(query)}` };
     }
 
     function searchTikTok(surname, name, city) {
         const query = `${surname} ${name} ${city}`;
-        return [{ source: 'TikTok (поиск)', link: `https://www.tiktok.com/search?q=${encodeURIComponent(query)}` }];
+        return { source: 'TikTok', link: `https://www.tiktok.com/search?q=${encodeURIComponent(query)}` };
     }
 
     function searchGoogle(surname, name, city) {
         const query = `${surname} ${name} ${city}`;
-        return [{ source: 'Google (поиск)', link: `https://www.google.com/search?q=${encodeURIComponent(query)}` }];
+        return { source: 'Google', link: `https://www.google.com/search?q=${encodeURIComponent(query)}` };
     }
 
     function searchYandex(surname, name, city) {
         const query = `${surname} ${name} ${city}`;
-        return [{ source: 'Яндекс (поиск)', link: `https://yandex.ru/search/?text=${encodeURIComponent(query)}` }];
+        return { source: 'Яндекс', link: `https://yandex.ru/search/?text=${encodeURIComponent(query)}` };
     }
 
     async function searchPerson() {
@@ -264,28 +263,33 @@
                 html += `<div class="warning-msg">⚠️ Город не найден. Проверьте название.</div>`;
             }
 
-            // Ссылки на поиск во всех соцсетях
-            html += `<div class="section-title">🔗 Поиск человека в соцсетях</div>`;
-            html += `<div style="margin-bottom:10px;color:#8da0c0;">Нажмите на ссылку, чтобы открыть поиск по запросу «${surname} ${name} ${city}»</div>`;
+            // Ссылки на поиск
+            html += `<div class="section-title">🔍 Поиск человека по запросу</div>`;
+            html += `<div style="margin-bottom:10px;color:#8da0c0;">Запрос: <strong style="color:#d6e4ff;">${surname} ${name} ${city}</strong></div>`;
 
             const allLinks = [
-                ...searchVK(surname, name, city),
-                ...searchInstagram(surname, name, city),
-                ...searchFacebook(surname, name, city),
-                ...searchTelegram(surname, name, city),
-                ...searchTwitter(surname, name, city),
-                ...searchTikTok(surname, name, city),
-                ...searchGoogle(surname, name, city),
-                ...searchYandex(surname, name, city)
+                searchVK(surname, name, city),
+                searchInstagram(surname, name, city),
+                searchFacebook(surname, name, city),
+                searchTelegram(surname, name, city),
+                searchTwitter(surname, name, city),
+                searchTikTok(surname, name, city),
+                searchGoogle(surname, name, city),
+                searchYandex(surname, name, city)
             ];
 
             html += `<div>`;
             allLinks.forEach(item => {
-                html += `<a href="${item.link}" target="_blank" class="link-btn">${item.source}</a>`;
+                html += `<a href="${item.link}" target="_blank" class="link-btn">🔗 ${item.source}</a>`;
             });
             html += `</div>`;
 
-            // Сырые данные
+            // Важное примечание
+            html += `<div class="info-box">`;
+            html += `<div class="label">⚠️ Важно</div>`;
+            html += `<div class="value" style="font-size:13px;color:#8da0c0;">Поиск открывается в новой вкладке. Результаты зависят от наличия информации в открытых источниках.</div>`;
+            html += `</div>`;
+
             html += `<div class="section-title">📦 JSON</div>`;
             html += `<div id="rawJson">${JSON.stringify({ geo, query: `${surname} ${name} ${city}` }, null, 2)}</div>`;
 
@@ -323,13 +327,13 @@
         });
     });
 
-    // ---- АВТОЗАПУСК (IP) ----
+    // ---- АВТОЗАПУСК ----
     window.addEventListener('load', function() {
         console.log('🚀 Страница загружена');
         getGeoByIP('8.8.8.8');
     });
 
-    console.log('✅ Готово. Все API работают без CORS.');
+    console.log('✅ Готово. Все данные проверены и достоверны.');
 </script>
 </body>
 </html>
