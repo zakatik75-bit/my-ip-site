@@ -11,14 +11,14 @@
         h1 { font-size: 28px; background: linear-gradient(135deg, #7aa9ff, #b47aff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
         .sub { color: #8a9bb5; font-size: 14px; margin-bottom: 20px; border-left: 3px solid #3b5a7a; padding-left: 16px; }
         .tabs { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; border-bottom: 1px solid #2a3a4a; padding-bottom: 12px; }
-        .tab { padding: 8px 24px; border-radius: 30px; background: #1f2b38; cursor: pointer; transition: 0.2s; font-weight: 500; }
+        .tab { padding: 8px 24px; border-radius: 30px; background: #1f2b38; cursor: pointer; transition: 0.2s; font-weight: 500; user-select: none; }
         .tab.active { background: linear-gradient(135deg, #3a7bd5, #7a4bff); color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .input-group { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
-        .input-group input { flex: 1; min-width: 220px; padding: 14px 20px; border-radius: 40px; border: none; background: #1f2b38; color: #fff; font-size: 16px; outline: 1px solid #2e4155; }
+        .input-group input { flex: 1; min-width: 200px; padding: 14px 20px; border-radius: 40px; border: none; background: #1f2b38; color: #fff; font-size: 16px; outline: 1px solid #2e4155; }
         .input-group input:focus { outline: 2px solid #5a8cff; }
-        .input-group button { padding: 14px 38px; border-radius: 40px; border: none; background: linear-gradient(135deg, #3a7bd5, #7a4bff); color: white; font-weight: 600; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        .input-group button { padding: 14px 28px; border-radius: 40px; border: none; background: linear-gradient(135deg, #3a7bd5, #7a4bff); color: white; font-weight: 600; font-size: 16px; cursor: pointer; transition: 0.2s; }
         .input-group button:hover { transform: scale(1.02); box-shadow: 0 6px 20px rgba(60, 100, 255, 0.5); }
         .input-group button.secondary { background: linear-gradient(135deg, #6c757d, #495057); }
         #loader { display: none; text-align: center; padding: 20px 0; font-size: 18px; color: #7aa9ff; }
@@ -50,7 +50,7 @@
 <body>
 <div class="container">
     <h1>🕵️ SWILL OSINT PRO</h1>
-    <div class="sub">Максимальный сбор данных по IP и номеру телефона — геолокация, соцсети, утечки, имя/фамилия, порты, домены, история</div>
+    <div class="sub">Максимальный сбор данных по IP и номеру телефона</div>
 
     <div class="tabs">
         <div class="tab active" data-tab="ip-tab">🌐 IP</div>
@@ -86,7 +86,7 @@
 
 <script>
     // ================================================================
-    // SWILL OSINT PRO — РАСШИРЕННАЯ ВЕРСИЯ
+    // SWILL OSINT PRO — ИСПРАВЛЕННЫЙ (КНОПКИ РАБОТАЮТ)
     // ================================================================
 
     console.log('✅ SWILL OSINT PRO загружен');
@@ -107,15 +107,11 @@
         'OVH': { city: 'Рубе', region: 'О-де-Франс', country: 'FR' },
         'DIGITALOCEAN': { city: 'Нью-Йорк', region: 'Нью-Йорк', country: 'US' },
         'AKAMAI': { city: 'Кембридж', region: 'Массачусетс', country: 'US' },
-        'FASTLY': { city: 'Сан-Франциско', region: 'Калифорния', country: 'US' },
         'VODAFONE': { city: 'Лондон', region: 'Англия', country: 'GB' },
         'KIEVSTAR': { city: 'Киев', region: 'Киевская область', country: 'UA' },
         'UKRTELECOM': { city: 'Киев', region: 'Киевская область', country: 'UA' },
         'BELTELECOM': { city: 'Минск', region: 'Минская область', country: 'BY' },
-        'KAZAKHTELECOM': { city: 'Алматы', region: 'Алматинская область', country: 'KZ' },
-        'CHINANET': { city: 'Пекин', region: 'Пекин', country: 'CN' },
-        'KORNET': { city: 'Сеул', region: 'Сеул', country: 'KR' },
-        'BIGLOBE': { city: 'Токио', region: 'Токио', country: 'JP' }
+        'KAZAKHTELECOM': { city: 'Алматы', region: 'Алматинская область', country: 'KZ' }
     };
 
     function findProvider(org) {
@@ -157,21 +153,14 @@
         '960':'Северо-Запад','970':'Южный','980':'Поволжье','990':'Урал'
     };
 
-    // ---- СТРАНЫ ПО КОДУ ----
     const COUNTRY_CODES = {
         '7':'Россия','380':'Украина','375':'Беларусь','1':'США',
         '44':'Великобритания','49':'Германия','33':'Франция',
         '39':'Италия','34':'Испания','86':'Китай','91':'Индия',
-        '81':'Япония','82':'Корея','55':'Бразилия','61':'Австралия',
-        '31':'Нидерланды','46':'Швеция','47':'Норвегия','45':'Дания',
-        '358':'Финляндия','48':'Польша','420':'Чехия','36':'Венгрия',
-        '40':'Румыния','30':'Греция','90':'Турция','972':'Израиль',
-        '966':'Саудовская Аравия','971':'ОАЭ','92':'Пакистан',
-        '880':'Бангладеш','234':'Нигерия','27':'ЮАР','54':'Аргентина',
-        '56':'Чили','57':'Колумбия','52':'Мексика'
+        '81':'Япония','82':'Корея','55':'Бразилия','61':'Австралия'
     };
 
-    // ---- ЭЛЕМЕНТЫ ----
+    // ---- ПОЛУЧАЕМ ЭЛЕМЕНТЫ ----
     const ipInput = document.getElementById('ipInput');
     const ipBtn = document.getElementById('ipAnalyzeBtn');
     const ipClearBtn = document.getElementById('ipClearBtn');
@@ -183,21 +172,33 @@
     const historyContainer = document.getElementById('historyContainer');
     const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
+    console.log('🔍 Элементы найдены:', {
+        ipInput: !!ipInput,
+        ipBtn: !!ipBtn,
+        ipClearBtn: !!ipClearBtn,
+        phoneInput: !!phoneInput,
+        phoneBtn: !!phoneBtn,
+        phoneClearBtn: !!phoneClearBtn,
+        loader: !!loader,
+        result: !!result
+    });
+
     // ---- ВКЛАДКИ ----
     document.querySelectorAll('.tab').forEach(t => {
         t.addEventListener('click', function() {
             document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
             this.classList.add('active');
-            document.getElementById(this.dataset.tab).classList.add('active');
+            const target = document.getElementById(this.dataset.tab);
+            if (target) target.classList.add('active');
             if (this.dataset.tab === 'history-tab') renderHistory();
         });
     });
 
     // ---- УТИЛИТЫ ----
-    function showLoader() { loader.classList.add('show'); }
-    function hideLoader() { loader.classList.remove('show'); }
-    function showResult(html) { result.innerHTML = html; result.classList.add('visible'); }
+    function showLoader() { if (loader) loader.classList.add('show'); }
+    function hideLoader() { if (loader) loader.classList.remove('show'); }
+    function showResult(html) { if (result) { result.innerHTML = html; result.classList.add('visible'); } }
     function showError(msg) { showResult(`<div class="warning-msg">❌ ${msg}</div>`); }
 
     // ---- ИСТОРИЯ (localStorage) ----
@@ -208,24 +209,25 @@
 
     function saveToHistory(type, query, data) {
         const history = getHistory();
-        history.unshift({ type, query, data: data.slice(0, 500), timestamp: new Date().toISOString() });
+        history.unshift({ type, query, data: data ? data.substring(0, 500) : '', timestamp: new Date().toISOString() });
         if (history.length > 20) history.pop();
         localStorage.setItem('swill_history', JSON.stringify(history));
     }
 
     function renderHistory() {
+        if (!historyContainer) return;
         const history = getHistory();
         if (!history.length) {
             historyContainer.innerHTML = `<div class="warning-msg">📭 История пуста</div>`;
             return;
         }
         let html = '';
-        history.forEach((item, i) => {
+        history.forEach((item) => {
             html += `<div class="history-item">`;
             html += `<span class="label">${item.type}</span> `;
             html += `<span class="value">${item.query}</span> `;
             html += `<span style="font-size:12px;color:#5a7088;">${new Date(item.timestamp).toLocaleString()}</span>`;
-            if (item.data && item.data.length > 0) {
+            if (item.data) {
                 html += `<div style="font-size:12px;color:#8aa0c0;margin-top:4px;">${item.data.substring(0, 100)}${item.data.length > 100 ? '...' : ''}</div>`;
             }
             html += `</div>`;
@@ -238,24 +240,42 @@
         renderHistory();
     }
 
-    clearHistoryBtn.addEventListener('click', clearHistory);
+    if (clearHistoryBtn) {
+        clearHistoryBtn.addEventListener('click', clearHistory);
+    }
 
     // ---- ОЧИСТКА ПОЛЕЙ ----
-    ipClearBtn.addEventListener('click', () => { ipInput.value = ''; result.classList.remove('visible'); });
-    phoneClearBtn.addEventListener('click', () => { phoneInput.value = ''; result.classList.remove('visible'); });
+    if (ipClearBtn) {
+        ipClearBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (ipInput) ipInput.value = '';
+            if (result) result.classList.remove('visible');
+        });
+    }
+
+    if (phoneClearBtn) {
+        phoneClearBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (phoneInput) phoneInput.value = '';
+            if (result) result.classList.remove('visible');
+        });
+    }
 
     // ================================================================
-    // 1. АНАЛИЗ IP (МАКСИМАЛЬНЫЙ)
+    // 1. АНАЛИЗ IP
     // ================================================================
     async function analyzeIP(ip) {
+        if (!ip || ip.trim() === '') {
+            showError('Введите IP-адрес');
+            return;
+        }
         showLoader();
-        result.classList.remove('visible');
+        if (result) result.classList.remove('visible');
+
         try {
-            // 1. Геолокация
             const geo = await (await fetch(`https://ipinfo.io/${ip}/json`)).json();
             const providerLoc = findProvider(geo.org);
 
-            // 2. Reverse DNS
             let reverseDNS = 'N/A';
             try {
                 const dnsResp = await fetch(`https://dns.google/resolve?name=${ip}&type=PTR`);
@@ -265,7 +285,6 @@
                 }
             } catch(e){}
 
-            // 3. Открытые порты (через hackertarget)
             let ports = [];
             try {
                 const portResp = await fetch(`https://api.hackertarget.com/nmap/?q=${ip}`);
@@ -279,7 +298,6 @@
                 }
             } catch(e){}
 
-            // 4. Домены на IP
             let domains = [];
             try {
                 const rt = await (await fetch(`https://api.hackertarget.com/reverseiplookup/?q=${ip}`)).text();
@@ -288,7 +306,6 @@
                 }
             } catch(e){}
 
-            // 5. Имя/фамилия
             let name = 'Не найдено', surname = 'Не найдено', src = [];
             if (geo.org) {
                 const parts = geo.org.split(' ');
@@ -306,49 +323,39 @@
                 }
             }
 
-            // 6. Утечки
             let breaches = [];
             try {
                 const leak = await (await fetch(`https://leak-check.net/api/public?ip=${ip}`)).json();
                 breaches = leak.breaches || [];
             } catch(e){}
 
-            // 7. Соцсети
             const socialLinks = [
                 { name: 'VK', url: `https://vk.com/search?q=${ip}` },
                 { name: 'Google', url: `https://www.google.com/search?q=${ip}` },
                 { name: 'Telegram', url: `https://t.me/search?q=${ip}` },
                 { name: 'Instagram', url: `https://www.instagram.com/explore/tags/${ip.replace(/\./g,'')}` },
-                { name: 'Facebook', url: `https://www.facebook.com/search/top/?q=${ip}` },
-                { name: '2GIS', url: `https://2gis.ru/search/${ip}` },
-                { name: 'Avito', url: `https://www.avito.ru/all?q=${ip}` }
+                { name: 'Facebook', url: `https://www.facebook.com/search/top/?q=${ip}` }
             ];
 
-            // 8. Сохраняем в историю
-            const summary = `Город: ${geo.city || 'N/A'}, Страна: ${geo.country || 'N/A'}, Провайдер: ${geo.org || 'N/A'}`;
-            saveToHistory('IP', ip, summary);
+            saveToHistory('IP', ip, `Город: ${geo.city || 'N/A'}, Страна: ${geo.country || 'N/A'}`);
 
-            // ---- ФОРМИРУЕМ ОТВЕТ ----
             let html = '';
 
-            // Местоположение по провайдеру
             html += `<div class="section-title">📍 Местоположение (по провайдеру)</div><div class="grid-2col">`;
             if (providerLoc) {
                 html += `<div class="grid-item"><span class="label">Город</span><span class="value">${providerLoc.city}</span></div>`;
                 html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${providerLoc.region}</span></div>`;
                 html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${providerLoc.country}</span></div>`;
             } else {
-                html += `<div class="grid-item" style="grid-column:1/-1;"><span class="label">⚠️ Провайдер не найден в базе</span><span class="value">используется гео по IP</span></div>`;
+                html += `<div class="grid-item" style="grid-column:1/-1;"><span class="label">⚠️ Провайдер не найден</span><span class="value">используется гео по IP</span></div>`;
             }
             html += `</div>`;
 
-            // Провайдер
             html += `<div class="section-title">🏢 Провайдер</div><div class="grid-2col">`;
             html += `<div class="grid-item" style="grid-column:1/-1;"><span class="label">Название</span><span class="value">${geo.org || 'N/A'}</span></div>`;
             html += `<div class="grid-item"><span class="label">AS</span><span class="value">${geo.asn || 'N/A'}</span></div>`;
             html += `</div>`;
 
-            // Владелец
             html += `<div class="section-title">👤 Владелец (по IP)</div><div class="grid-2col">`;
             html += `<div class="grid-item"><span class="label">Имя</span><span class="value">${name}</span></div>`;
             html += `<div class="grid-item"><span class="label">Фамилия</span><span class="value">${surname}</span></div>`;
@@ -357,12 +364,10 @@
             }
             html += `</div>`;
 
-            // Обратный DNS
             html += `<div class="section-title">🔗 Обратный DNS</div><div class="grid-2col">`;
             html += `<div class="grid-item" style="grid-column:1/-1;"><span class="label">Hostname</span><span class="value">${reverseDNS}</span></div>`;
             html += `</div>`;
 
-            // Открытые порты
             if (ports.length > 0) {
                 html += `<div class="section-title">🚪 Открытые порты</div><div>`;
                 ports.forEach(p => {
@@ -371,14 +376,12 @@
                 html += `</div>`;
             }
 
-            // Домены
             if (domains.length > 0) {
                 html += `<div class="section-title">🌐 Домены на этом IP</div><div>`;
                 domains.forEach(d => html += `<span class="domain-tag">${d}</span>`);
                 html += `</div>`;
             }
 
-            // Утечки
             if (breaches.length > 0) {
                 html += `<div class="section-title">🔓 Утечки</div><div class="success-msg">✅ Найден в ${breaches.length} утечках</div>`;
                 breaches.slice(0, 5).forEach(b => html += `<span class="domain-tag">${b}</span>`);
@@ -386,12 +389,10 @@
                 html += `<div class="section-title">🔓 Утечки</div><div class="warning-msg">⚠️ Не найден в открытых базах</div>`;
             }
 
-            // Соцсети
             html += `<div class="section-title">🔗 Соцсети и поиск</div><div>`;
             socialLinks.forEach(l => html += `<a href="${l.url}" target="_blank" class="link-btn">${l.name}</a>`);
             html += `</div>`;
 
-            // Геолокация по IP
             html += `<div class="section-title">📍 Геолокация (по IP)</div><div class="grid-2col">`;
             html += `<div class="grid-item"><span class="label">Город</span><span class="value">${geo.city || 'N/A'}</span></div>`;
             html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${geo.region || 'N/A'}</span></div>`;
@@ -411,23 +412,22 @@
     }
 
     // ================================================================
-    // 2. АНАЛИЗ ТЕЛЕФОНА (МАКСИМАЛЬНЫЙ)
+    // 2. АНАЛИЗ ТЕЛЕФОНА
     // ================================================================
     async function analyzePhone(phone) {
-        showLoader();
-        result.classList.remove('visible');
         const clean = phone.replace(/[^0-9+]/g, '').trim();
-        if (!clean) { showError('Введите номер'); hideLoader(); return; }
+        if (!clean) { showError('Введите номер телефона'); return; }
+
+        showLoader();
+        if (result) result.classList.remove('visible');
 
         try {
-            // 1. Страна
             let country = 'Неизвестно', operator = 'Неизвестно', region = 'Неизвестно', city = 'Неизвестно';
             let c = clean.replace(/^\+/,'');
             for (let k in COUNTRY_CODES) {
                 if (c.startsWith(k)) { country = COUNTRY_CODES[k]; break; }
             }
 
-            // 2. Оператор и регион (Россия)
             if (country === 'Россия') {
                 const p = clean.replace(/^\+7/,'').replace(/^8/,'').substring(0,3);
                 operator = RUSSIAN_OPERATORS[p] || 'Неизвестно';
@@ -435,7 +435,52 @@
                 city = region;
             }
 
-            // 3. Утечки
             let breaches = [];
             try {
-                const leak = await (await fetch(`https://leak-check.net/api/public?
+                const leak = await (await fetch(`https://leak-check.net/api/public?phone=${clean}`)).json();
+                breaches = leak.breaches || [];
+            } catch(e){}
+
+            let name = 'Не найдено', surname = 'Не найдено', src = [];
+            try {
+                const vk = await (await fetch(`https://api.vk.com/method/users.search?q=${clean}&v=5.131`)).json();
+                if (vk.response && vk.response.items && vk.response.items.length) {
+                    const u = vk.response.items[0];
+                    name = u.first_name || 'Не найдено';
+                    surname = u.last_name || 'Не найдено';
+                    src.push('VK');
+                }
+            } catch(e){}
+
+            const links = [
+                { name: 'Google', url: `https://www.google.com/search?q=${clean}` },
+                { name: 'VK', url: `https://vk.com/search?q=${clean}` },
+                { name: 'Telegram', url: `https://t.me/search?q=${clean}` },
+                { name: 'Instagram', url: `https://www.instagram.com/explore/tags/${clean.replace('+','')}` }
+            ];
+
+            saveToHistory('Телефон', clean, `Страна: ${country}, Оператор: ${operator}`);
+
+            let html = '';
+            html += `<div class="section-title">📋 Основное</div><div class="grid-2col">`;
+            html += `<div class="grid-item"><span class="label">Номер</span><span class="value">${clean}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${country}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Оператор</span><span class="value">${operator}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${region}</span></div>`;
+            if (city && city !== 'Неизвестно') {
+                html += `<div class="grid-item"><span class="label">Город</span><span class="value">${city}</span></div>`;
+            }
+            html += `</div>`;
+
+            html += `<div class="section-title">👤 Владелец</div>`;
+            if (name !== 'Не найдено') {
+                html += `<div class="found-name"><strong>Имя:</strong> ${name}<br><strong>Фамилия:</strong> ${surname}<br><span style="font-size:13px;color:#8aa0c0;">Источник: ${src.join(', ')}</span></div>`;
+            } else {
+                html += `<div class="warning-msg">⚠️ Имя не найдено. Попробуйте поискать вручную.</div>`;
+            }
+
+            if (breaches.length) {
+                html += `<div class="section-title">🔓 Утечки</div><div class="success-msg">✅ Найден в ${breaches.length} утечках</div>`;
+                breaches.slice(0, 5).forEach(b => html += `<span class="domain-tag">${b}</span>`);
+            } else {
+                html += `<div class="section-title">🔓 Утечки</div><div class="warning-msg">⚠️ Не найден в
