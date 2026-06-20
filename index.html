@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SWILL OSINT PRO</title>
+    <title>SWILL OSINT — IP + Поиск людей</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #0b0e14; font-family: 'Segoe UI', sans-serif; color: #e0e6f0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .container { max-width: 1200px; width: 100%; background: #151e2a; border-radius: 24px; padding: 30px 35px; box-shadow: 0 20px 40px rgba(0,0,0,0.7); border: 1px solid #2a3a4a; }
+        .container { max-width: 1100px; width: 100%; background: #151e2a; border-radius: 24px; padding: 30px 35px; box-shadow: 0 20px 40px rgba(0,0,0,0.7); border: 1px solid #2a3a4a; }
         h1 { font-size: 28px; background: linear-gradient(135deg, #7aa9ff, #b47aff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
         .sub { color: #8a9bb5; font-size: 14px; margin-bottom: 20px; border-left: 3px solid #3b5a7a; padding-left: 16px; }
         .tabs { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; border-bottom: 1px solid #2a3a4a; padding-bottom: 12px; }
@@ -15,12 +15,11 @@
         .tab.active { background: linear-gradient(135deg, #3a7bd5, #7a4bff); color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .input-group { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
-        .input-group input { flex: 1; min-width: 200px; padding: 14px 20px; border-radius: 40px; border: none; background: #1f2b38; color: #fff; font-size: 16px; outline: 1px solid #2e4155; }
+        .input-group { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .input-group input { flex: 1; min-width: 160px; padding: 14px 20px; border-radius: 40px; border: none; background: #1f2b38; color: #fff; font-size: 16px; outline: 1px solid #2e4155; }
         .input-group input:focus { outline: 2px solid #5a8cff; }
         .input-group button { padding: 14px 28px; border-radius: 40px; border: none; background: linear-gradient(135deg, #3a7bd5, #7a4bff); color: white; font-weight: 600; font-size: 16px; cursor: pointer; transition: 0.2s; }
         .input-group button:hover { transform: scale(1.02); box-shadow: 0 6px 20px rgba(60, 100, 255, 0.5); }
-        .input-group button.secondary { background: linear-gradient(135deg, #6c757d, #495057); }
         #loader { display: none; text-align: center; padding: 20px 0; font-size: 18px; color: #7aa9ff; }
         #loader.show { display: block; }
         .result-card { background: #101a26; border-radius: 18px; padding: 20px 24px; margin-top: 10px; border: 1px solid #263544; display: none; }
@@ -32,499 +31,327 @@
         .grid-item .label { color: #8da0c0; }
         .grid-item .value { font-weight: 500; color: #d6e4ff; text-align: right; word-break: break-all; max-width: 60%; }
         .warning-msg { color: #ffcc66; background: #2a2a1a; padding: 14px; border-radius: 14px; border-left: 4px solid #ffaa00; margin-top: 10px; }
-        .success-msg { color: #66ff88; background: #1a2a1a; padding: 14px; border-radius: 14px; border-left: 4px solid #00ff44; margin-top: 10px; }
-        .found-name { background: #1a2a1a; border-left: 3px solid #66ff88; padding: 12px 16px; border-radius: 12px; margin-top: 6px; font-size: 16px; }
         .link-btn { display: inline-block; background: #1f3349; padding: 6px 18px; border-radius: 30px; color: #7aa9ff; text-decoration: none; margin: 4px 6px 4px 0; font-size: 14px; }
         .link-btn:hover { background: #2a405a; }
-        .domain-tag { background: #1b2a3c; padding: 2px 14px; border-radius: 30px; font-size: 13px; color: #b8d0f0; display: inline-block; margin: 3px 4px 3px 0; }
-        .port-item { background: #1f3142; padding: 2px 14px; border-radius: 30px; font-size: 14px; font-weight: 500; color: #7fc1ff; display: inline-block; margin: 3px 4px 3px 0; }
-        .history-item { background: #0d1520; padding: 8px 14px; border-radius: 10px; margin: 4px 0; font-size: 14px; border-left: 2px solid #3a7bd5; }
-        .history-item .label { color: #8da0c0; }
-        .history-item .value { color: #d6e4ff; }
+        .profile-card { background: #0d1520; padding: 14px 18px; border-radius: 14px; margin-top: 10px; border-left: 3px solid #3a7bd5; }
+        .profile-card .name { font-size: 18px; font-weight: 600; color: #d6e4ff; }
+        .profile-card .detail { font-size: 14px; color: #8da0c0; margin-top: 4px; }
         #rawJson { background: #0a111c; padding: 14px; border-radius: 12px; font-family: 'Courier New', monospace; font-size: 13px; max-height: 260px; overflow: auto; color: #b0c8e0; border: 1px solid #223544; margin-top: 10px; white-space: pre-wrap; word-break: break-all; }
         .footer-note { margin-top: 25px; font-size: 13px; color: #5a7088; text-align: center; border-top: 1px solid #1d2c3d; padding-top: 18px; }
+        .map-container { margin-top: 12px; border-radius: 14px; overflow: hidden; border: 1px solid #263544; }
+        .map-container iframe { width: 100%; height: 300px; border: none; display: block; }
         @media (max-width: 700px) { .container { padding: 18px; } .grid-2col { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>🕵️ SWILL OSINT PRO</h1>
-    <div class="sub">Максимальный сбор данных по IP и номеру телефона</div>
+    <h1>🕵️ SWILL OSINT</h1>
+    <div class="sub">Геопозиция по IP + поиск людей по фамилии, имени и городу</div>
 
     <div class="tabs">
-        <div class="tab active" data-tab="ip-tab">🌐 IP</div>
-        <div class="tab" data-tab="phone-tab">📱 Телефон</div>
-        <div class="tab" data-tab="history-tab">📜 История</div>
+        <div class="tab active" data-tab="ip-tab">🌐 IP → Геопозиция</div>
+        <div class="tab" data-tab="search-tab">🔍 Поиск людей</div>
     </div>
 
+    <!-- Вкладка IP -->
     <div id="ip-tab" class="tab-content active">
         <div class="input-group">
-            <input type="text" id="ipInput" placeholder="IP, например 8.8.8.8" value="8.8.8.8">
-            <button id="ipAnalyzeBtn">🔍 Анализировать</button>
-            <button id="ipClearBtn" class="secondary">🗑️ Очистить</button>
+            <input type="text" id="ipInput" placeholder="Введите IP, например 8.8.8.8" value="8.8.8.8">
+            <button id="ipBtn">📍 Определить геопозицию</button>
         </div>
     </div>
 
-    <div id="phone-tab" class="tab-content">
+    <!-- Вкладка поиска людей -->
+    <div id="search-tab" class="tab-content">
         <div class="input-group">
-            <input type="text" id="phoneInput" placeholder="+79261234567">
-            <button id="phoneAnalyzeBtn">🔍 Пробить</button>
-            <button id="phoneClearBtn" class="secondary">🗑️ Очистить</button>
+            <input type="text" id="surnameInput" placeholder="Фамилия" value="Иванов">
+            <input type="text" id="nameInput" placeholder="Имя" value="Сергей">
+            <input type="text" id="cityInput" placeholder="Город" value="Москва">
+            <button id="searchBtn">🔍 Найти</button>
         </div>
     </div>
 
-    <div id="history-tab" class="tab-content">
-        <div id="historyContainer"></div>
-        <button id="clearHistoryBtn" class="secondary" style="margin-top:10px;">🗑️ Очистить всю историю</button>
-    </div>
-
-    <div id="loader"><span>⏳ Сбор данных...</span></div>
+    <div id="loader"><span>⏳ Загрузка...</span></div>
     <div id="resultContainer" class="result-card"></div>
-    <div class="footer-note">⚡ Только публичные API и открытые источники</div>
+    <div class="footer-note">⚡ Данные из открытых источников и публичных API</div>
 </div>
 
 <script>
     // ================================================================
-    // SWILL OSINT PRO — ПОЛНОСТЬЮ РАБОЧАЯ ВЕРСИЯ
+    // SWILL OSINT — IP ГЕОПОЗИЦИЯ + ПОИСК ЛЮДЕЙ
     // ================================================================
 
-    console.log('✅ SWILL OSINT PRO загружен');
+    console.log('✅ SWILL OSINT загружен');
 
-    // ---- БАЗА ПРОВАЙДЕРОВ ----
-    const PROVIDER_DB = {
-        'FOR UNITY LLC': { city: 'Ереван', region: 'Армения', country: 'AM' },
-        'GOOGLE': { city: 'Маунтин-Вью', region: 'Калифорния', country: 'US' },
-        'CLOUDFLARE': { city: 'Сан-Франциско', region: 'Калифорния', country: 'US' },
-        'AMAZON': { city: 'Сиэтл', region: 'Вашингтон', country: 'US' },
-        'MICROSOFT': { city: 'Редмонд', region: 'Вашингтон', country: 'US' },
-        'MTS': { city: 'Москва', region: 'Московская область', country: 'RU' },
-        'BEELINE': { city: 'Москва', region: 'Московская область', country: 'RU' },
-        'MEGAFON': { city: 'Москва', region: 'Московская область', country: 'RU' },
-        'ROSTELECOM': { city: 'Москва', region: 'Московская область', country: 'RU' },
-        'TELE2': { city: 'Москва', region: 'Московская область', country: 'RU' },
-        'HETZNER': { city: 'Гюнценхаузен', region: 'Бавария', country: 'DE' },
-        'OVH': { city: 'Рубе', region: 'О-де-Франс', country: 'FR' },
-        'DIGITALOCEAN': { city: 'Нью-Йорк', region: 'Нью-Йорк', country: 'US' }
-    };
-
-    function findProvider(org) {
-        if (!org) return null;
-        for (let key in PROVIDER_DB) {
-            if (org.includes(key) || key.includes(org)) return PROVIDER_DB[key];
-        }
-        return null;
-    }
-
-    // ---- ОПЕРАТОРЫ РОССИИ ----
-    const RUSSIAN_OPERATORS = {
-        '900':'Tele2','901':'Tele2','902':'Tele2','903':'Билайн','904':'Tele2',
-        '905':'Билайн','906':'Билайн','908':'Билайн','909':'Билайн','910':'МТС',
-        '916':'МТС','920':'Мегафон','921':'Мегафон','925':'Мегафон',
-        '930':'МТС','950':'МТС','960':'Мегафон','970':'Билайн',
-        '980':'Tele2','981':'Tele2','982':'Tele2','990':'МТС','999':'МТС'
-    };
-
-    const RUSSIAN_REGIONS = {
-        '903':'Москва','905':'Москва','906':'Москва','910':'Центральный',
-        '916':'Москва','920':'Москва','925':'Москва','926':'Москва',
-        '929':'Москва','930':'Центральный','950':'Центральный',
-        '960':'Северо-Запад','970':'Южный','980':'Поволжье','990':'Урал'
-    };
-
-    const COUNTRY_CODES = {
-        '7':'Россия','380':'Украина','375':'Беларусь','1':'США',
-        '44':'Великобритания','49':'Германия','33':'Франция',
-        '39':'Италия','34':'Испания','86':'Китай','91':'Индия'
-    };
-
-    // ---- ПОЛУЧАЕМ ЭЛЕМЕНТЫ ----
+    // ---- ЭЛЕМЕНТЫ ----
     const ipInput = document.getElementById('ipInput');
-    const ipBtn = document.getElementById('ipAnalyzeBtn');
-    const ipClearBtn = document.getElementById('ipClearBtn');
-    const phoneInput = document.getElementById('phoneInput');
-    const phoneBtn = document.getElementById('phoneAnalyzeBtn');
-    const phoneClearBtn = document.getElementById('phoneClearBtn');
+    const ipBtn = document.getElementById('ipBtn');
+    const surnameInput = document.getElementById('surnameInput');
+    const nameInput = document.getElementById('nameInput');
+    const cityInput = document.getElementById('cityInput');
+    const searchBtn = document.getElementById('searchBtn');
     const loader = document.getElementById('loader');
-    const result = document.getElementById('resultContainer');
-    const historyContainer = document.getElementById('historyContainer');
-    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
-
-    console.log('🔍 Элементы найдены:', {
-        ipInput: !!ipInput,
-        ipBtn: !!ipBtn,
-        ipClearBtn: !!ipClearBtn,
-        phoneInput: !!phoneInput,
-        phoneBtn: !!phoneBtn,
-        phoneClearBtn: !!phoneClearBtn,
-        loader: !!loader,
-        result: !!result
-    });
+    const resultContainer = document.getElementById('resultContainer');
 
     // ---- ВКЛАДКИ ----
-    document.querySelectorAll('.tab').forEach(t => {
-        t.addEventListener('click', function() {
-            document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             this.classList.add('active');
-            const target = document.getElementById(this.dataset.tab);
-            if (target) target.classList.add('active');
-            if (this.dataset.tab === 'history-tab') renderHistory();
+            document.getElementById(this.dataset.tab).classList.add('active');
         });
     });
 
     // ---- УТИЛИТЫ ----
-    function showLoader() { if (loader) loader.classList.add('show'); }
-    function hideLoader() { if (loader) loader.classList.remove('show'); }
-    function showResult(html) { if (result) { result.innerHTML = html; result.classList.add('visible'); } }
+    function showLoader() { loader.classList.add('show'); }
+    function hideLoader() { loader.classList.remove('show'); }
+    function showResult(html) { resultContainer.innerHTML = html; resultContainer.classList.add('visible'); }
     function showError(msg) { showResult(`<div class="warning-msg">❌ ${msg}</div>`); }
 
-    // ---- ИСТОРИЯ ----
-    function getHistory() {
-        try { return JSON.parse(localStorage.getItem('swill_history')) || []; }
-        catch { return []; }
-    }
-
-    function saveToHistory(type, query, data) {
-        const history = getHistory();
-        history.unshift({ type, query, data: data ? data.substring(0, 500) : '', timestamp: new Date().toISOString() });
-        if (history.length > 20) history.pop();
-        localStorage.setItem('swill_history', JSON.stringify(history));
-    }
-
-    function renderHistory() {
-        if (!historyContainer) return;
-        const history = getHistory();
-        if (!history.length) {
-            historyContainer.innerHTML = `<div class="warning-msg">📭 История пуста</div>`;
-            return;
-        }
-        let html = '';
-        history.forEach((item) => {
-            html += `<div class="history-item">`;
-            html += `<span class="label">${item.type}</span> `;
-            html += `<span class="value">${item.query}</span> `;
-            html += `<span style="font-size:12px;color:#5a7088;">${new Date(item.timestamp).toLocaleString()}</span>`;
-            if (item.data) {
-                html += `<div style="font-size:12px;color:#8aa0c0;margin-top:4px;">${item.data.substring(0, 100)}${item.data.length > 100 ? '...' : ''}</div>`;
-            }
-            html += `</div>`;
-        });
-        historyContainer.innerHTML = html;
-    }
-
-    function clearHistory() {
-        localStorage.removeItem('swill_history');
-        renderHistory();
-    }
-
-    if (clearHistoryBtn) {
-        clearHistoryBtn.addEventListener('click', clearHistory);
-    }
-
-    // ---- ОЧИСТКА ПОЛЕЙ ----
-    if (ipClearBtn) {
-        ipClearBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (ipInput) ipInput.value = '';
-            if (result) result.classList.remove('visible');
-        });
-    }
-
-    if (phoneClearBtn) {
-        phoneClearBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (phoneInput) phoneInput.value = '';
-            if (result) result.classList.remove('visible');
-        });
-    }
-
     // ================================================================
-    // 1. АНАЛИЗ IP
+    // 1. ГЕОПОЗИЦИЯ ПО IP
     // ================================================================
-    async function analyzeIP(ip) {
+    async function getGeoByIP(ip) {
         if (!ip || ip.trim() === '') {
             showError('Введите IP-адрес');
             return;
         }
+
         showLoader();
-        if (result) result.classList.remove('visible');
+        resultContainer.classList.remove('visible');
 
         try {
             const geo = await (await fetch(`https://ipinfo.io/${ip}/json`)).json();
-            const providerLoc = findProvider(geo.org);
+            console.log('🌍 IP гео:', geo);
 
-            let reverseDNS = 'N/A';
-            try {
-                const dnsResp = await fetch(`https://dns.google/resolve?name=${ip}&type=PTR`);
-                const dnsData = await dnsResp.json();
-                if (dnsData.Answer && dnsData.Answer.length > 0) {
-                    reverseDNS = dnsData.Answer[0].data;
-                }
-            } catch(e){}
-
-            let ports = [];
-            try {
-                const portResp = await fetch(`https://api.hackertarget.com/nmap/?q=${ip}`);
-                const portText = await portResp.text();
-                if (portText && !portText.includes('error')) {
-                    const lines = portText.split('\n');
-                    for (let line of lines) {
-                        const match = line.match(/(\d+)\/tcp\s+(\w+)/);
-                        if (match) ports.push({ port: match[1], state: match[2] });
-                    }
-                }
-            } catch(e){}
-
-            let domains = [];
-            try {
-                const rt = await (await fetch(`https://api.hackertarget.com/reverseiplookup/?q=${ip}`)).text();
-                if (rt && !rt.includes('error') && !rt.includes('No DNS')) {
-                    domains = rt.split('\n').filter(d => d.trim()).slice(0, 15);
-                }
-            } catch(e){}
-
-            let name = 'Не найдено', surname = 'Не найдено', src = [];
-            if (geo.org) {
-                const parts = geo.org.split(' ');
-                const common = ['LLC','LTD','INC','CORP','AS','SIA','OOO','ООО','ГБУ','ГУП','МУП','ФГУП','FOR','UNITY'];
-                const f = parts.filter(p => !common.includes(p.toUpperCase()) && p.length > 2);
-                if (f.length) { name = f[0]; if (f.length > 1) surname = f.slice(1).join(' '); src.push('провайдер'); }
-            }
-            for (let d of domains) {
-                const parts = d.replace(/\.(ru|com|org|net|info|xyz|ua|by|kz)$/,'').split(/[-_.]/);
-                for (let p of parts) {
-                    if (p.length > 2 && p.match(/^[a-zA-Zа-яА-Я]/) && !p.match(/^www$/i) && name === 'Не найдено') {
-                        name = p.charAt(0).toUpperCase() + p.slice(1);
-                        src.push('домен');
-                    }
-                }
+            if (!geo || geo.error) {
+                showError('Не удалось определить геопозицию. Проверьте IP.');
+                hideLoader();
+                return;
             }
 
-            let breaches = [];
-            try {
-                const leak = await (await fetch(`https://leak-check.net/api/public?ip=${ip}`)).json();
-                breaches = leak.breaches || [];
-            } catch(e){}
-
-            const socialLinks = [
-                { name: 'VK', url: `https://vk.com/search?q=${ip}` },
-                { name: 'Google', url: `https://www.google.com/search?q=${ip}` },
-                { name: 'Telegram', url: `https://t.me/search?q=${ip}` },
-                { name: 'Instagram', url: `https://www.instagram.com/explore/tags/${ip.replace(/\./g,'')}` },
-                { name: 'Facebook', url: `https://www.facebook.com/search/top/?q=${ip}` }
-            ];
-
-            saveToHistory('IP', ip, `Город: ${geo.city || 'N/A'}, Страна: ${geo.country || 'N/A'}`);
+            const lat = geo.loc ? geo.loc.split(',')[0] : null;
+            const lon = geo.loc ? geo.loc.split(',')[1] : null;
 
             let html = '';
 
-            html += `<div class="section-title">📍 Местоположение (по провайдеру)</div><div class="grid-2col">`;
-            if (providerLoc) {
-                html += `<div class="grid-item"><span class="label">Город</span><span class="value">${providerLoc.city}</span></div>`;
-                html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${providerLoc.region}</span></div>`;
-                html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${providerLoc.country}</span></div>`;
-            } else {
-                html += `<div class="grid-item" style="grid-column:1/-1;"><span class="label">⚠️ Провайдер не найден</span><span class="value">используется гео по IP</span></div>`;
-            }
-            html += `</div>`;
-
-            html += `<div class="section-title">🏢 Провайдер</div><div class="grid-2col">`;
-            html += `<div class="grid-item" style="grid-column:1/-1;"><span class="label">Название</span><span class="value">${geo.org || 'N/A'}</span></div>`;
-            html += `<div class="grid-item"><span class="label">AS</span><span class="value">${geo.asn || 'N/A'}</span></div>`;
-            html += `</div>`;
-
-            html += `<div class="section-title">👤 Владелец (по IP)</div><div class="grid-2col">`;
-            html += `<div class="grid-item"><span class="label">Имя</span><span class="value">${name}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Фамилия</span><span class="value">${surname}</span></div>`;
-            if (src.length) {
-                html += `<div class="grid-item" style="grid-column:1/-1;border-bottom:none;"><span class="label">Источник</span><span class="value" style="font-weight:300;font-size:13px;color:#8aa0c0;">${src.join(', ')}</span></div>`;
-            }
-            html += `</div>`;
-
-            html += `<div class="section-title">🔗 Обратный DNS</div><div class="grid-2col">`;
-            html += `<div class="grid-item" style="grid-column:1/-1;"><span class="label">Hostname</span><span class="value">${reverseDNS}</span></div>`;
-            html += `</div>`;
-
-            if (ports.length > 0) {
-                html += `<div class="section-title">🚪 Открытые порты</div><div>`;
-                ports.forEach(p => {
-                    html += `<span class="port-item">${p.port} (${p.state})</span>`;
-                });
-                html += `</div>`;
-            }
-
-            if (domains.length > 0) {
-                html += `<div class="section-title">🌐 Домены на этом IP</div><div>`;
-                domains.forEach(d => html += `<span class="domain-tag">${d}</span>`);
-                html += `</div>`;
-            }
-
-            if (breaches.length > 0) {
-                html += `<div class="section-title">🔓 Утечки</div><div class="success-msg">✅ Найден в ${breaches.length} утечках</div>`;
-                breaches.slice(0, 5).forEach(b => html += `<span class="domain-tag">${b}</span>`);
-            } else {
-                html += `<div class="section-title">🔓 Утечки</div><div class="warning-msg">⚠️ Не найден в открытых базах</div>`;
-            }
-
-            html += `<div class="section-title">🔗 Соцсети и поиск</div><div>`;
-            socialLinks.forEach(l => html += `<a href="${l.url}" target="_blank" class="link-btn">${l.name}</a>`);
-            html += `</div>`;
-
-            html += `<div class="section-title">📍 Геолокация (по IP)</div><div class="grid-2col">`;
+            html += `<div class="section-title">📍 Геопозиция по IP</div>`;
+            html += `<div class="grid-2col">`;
+            html += `<div class="grid-item"><span class="label">IP</span><span class="value">${geo.ip || 'N/A'}</span></div>`;
             html += `<div class="grid-item"><span class="label">Город</span><span class="value">${geo.city || 'N/A'}</span></div>`;
             html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${geo.region || 'N/A'}</span></div>`;
             html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${geo.country || 'N/A'}</span></div>`;
             html += `<div class="grid-item"><span class="label">Координаты</span><span class="value">${geo.loc || 'N/A'}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Почтовый индекс</span><span class="value">${geo.postal || 'N/A'}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Провайдер</span><span class="value">${geo.org || 'N/A'}</span></div>`;
             html += `<div class="grid-item"><span class="label">Часовой пояс</span><span class="value">${geo.timezone || 'N/A'}</span></div>`;
             html += `</div>`;
 
-            html += `<div class="section-title">📦 JSON</div><div id="rawJson">${JSON.stringify({ geo, providerLoc, reverseDNS, ports, domains, name, surname, breaches }, null, 2)}</div>`;
+            // КАРТА (если есть координаты)
+            if (lat && lon) {
+                html += `<div class="section-title">🗺️ Карта</div>`;
+                html += `<div class="map-container">`;
+                html += `<iframe src="https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(lon)-0.02}%2C${parseFloat(lat)-0.02}%2C${parseFloat(lon)+0.02}%2C${parseFloat(lat)+0.02}&layer=mapnik&marker=${lat}%2C${lon}" allowfullscreen></iframe>`;
+                html += `</div>`;
+                html += `<div style="margin-top:8px;"><a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=14" target="_blank" class="link-btn">🗺️ Открыть карту (полный экран)</a></div>`;
+            }
+
+            // Сырые данные
+            html += `<div class="section-title">📦 JSON</div>`;
+            html += `<div id="rawJson">${JSON.stringify(geo, null, 2)}</div>`;
 
             showResult(html);
+
         } catch(e) {
-            showError('Ошибка: ' + e.message);
+            showError('Ошибка при получении геопозиции: ' + e.message);
         }
+
         hideLoader();
     }
 
     // ================================================================
-    // 2. АНАЛИЗ ТЕЛЕФОНА
+    // 2. ПОИСК ЛЮДЕЙ ПО ФАМИЛИИ, ИМЕНИ, ГОРОДУ
     // ================================================================
-    async function analyzePhone(phone) {
-        const clean = phone.replace(/[^0-9+]/g, '').trim();
-        if (!clean) { showError('Введите номер телефона'); return; }
+
+    // Геолокация города (OpenStreetMap)
+    async function getGeoByCity(city) {
+        if (!city || city.trim() === '') return null;
+        try {
+            const resp = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`);
+            const data = await resp.json();
+            if (data && data.length > 0) {
+                return {
+                    lat: parseFloat(data[0].lat),
+                    lon: parseFloat(data[0].lon),
+                    display_name: data[0].display_name
+                };
+            }
+        } catch(e) { console.log('Гео ошибка:', e); }
+        return null;
+    }
+
+    // VK
+    async function searchVK(surname, name, city) {
+        let results = [];
+        try {
+            const query = `${surname} ${name} ${city}`;
+            const resp = await fetch(`https://api.vk.com/method/users.search?q=${encodeURIComponent(query)}&v=5.131&count=5`);
+            const data = await resp.json();
+            if (data.response && data.response.items) {
+                results = data.response.items.map(user => ({
+                    source: 'VK',
+                    name: `${user.first_name} ${user.last_name}`,
+                    link: `https://vk.com/id${user.id}`,
+                    photo: user.photo_100 || '',
+                    city: user.city ? user.city.title : 'Не указан'
+                }));
+            }
+        } catch(e) { console.log('VK ошибка:', e); }
+        return results;
+    }
+
+    function searchInstagram(surname, name, city) {
+        const query = `${surname} ${name} ${city}`;
+        return [{ source: 'Instagram (поиск)', link: `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(query)}` }];
+    }
+
+    function searchFacebook(surname, name, city) {
+        const query = `${surname} ${name} ${city}`;
+        return [{ source: 'Facebook (поиск)', link: `https://www.facebook.com/search/top/?q=${encodeURIComponent(query)}` }];
+    }
+
+    function searchTelegram(surname, name, city) {
+        const query = `${surname} ${name} ${city}`;
+        return [{ source: 'Telegram (поиск)', link: `https://t.me/search?q=${encodeURIComponent(query)}` }];
+    }
+
+    function searchTwitter(surname, name, city) {
+        const query = `${surname} ${name} ${city}`;
+        return [{ source: 'Twitter/X (поиск)', link: `https://twitter.com/search?q=${encodeURIComponent(query)}` }];
+    }
+
+    function searchTikTok(surname, name, city) {
+        const query = `${surname} ${name} ${city}`;
+        return [{ source: 'TikTok (поиск)', link: `https://www.tiktok.com/search?q=${encodeURIComponent(query)}` }];
+    }
+
+    function searchGoogle(surname, name, city) {
+        const query = `${surname} ${name} ${city}`;
+        return [{ source: 'Google (поиск)', link: `https://www.google.com/search?q=${encodeURIComponent(query)}` }];
+    }
+
+    async function searchPerson() {
+        const surname = surnameInput.value.trim();
+        const name = nameInput.value.trim();
+        const city = cityInput.value.trim();
+
+        if (!surname || !name || !city) {
+            alert('Заполните все поля: фамилия, имя, город');
+            return;
+        }
 
         showLoader();
-        if (result) result.classList.remove('visible');
+        resultContainer.classList.remove('visible');
 
         try {
-            let country = 'Неизвестно', operator = 'Неизвестно', region = 'Неизвестно', city = 'Неизвестно';
-            let c = clean.replace(/^\+/,'');
-            for (let k in COUNTRY_CODES) {
-                if (c.startsWith(k)) { country = COUNTRY_CODES[k]; break; }
-            }
-
-            if (country === 'Россия') {
-                const p = clean.replace(/^\+7/,'').replace(/^8/,'').substring(0,3);
-                operator = RUSSIAN_OPERATORS[p] || 'Неизвестно';
-                region = RUSSIAN_REGIONS[p] || 'Неизвестно';
-                city = region;
-            }
-
-            let breaches = [];
-            try {
-                const leak = await (await fetch(`https://leak-check.net/api/public?phone=${clean}`)).json();
-                breaches = leak.breaches || [];
-            } catch(e){}
-
-            let name = 'Не найдено', surname = 'Не найдено', src = [];
-            try {
-                const vk = await (await fetch(`https://api.vk.com/method/users.search?q=${clean}&v=5.131`)).json();
-                if (vk.response && vk.response.items && vk.response.items.length) {
-                    const u = vk.response.items[0];
-                    name = u.first_name || 'Не найдено';
-                    surname = u.last_name || 'Не найдено';
-                    src.push('VK');
-                }
-            } catch(e){}
-
-            const links = [
-                { name: 'Google', url: `https://www.google.com/search?q=${clean}` },
-                { name: 'VK', url: `https://vk.com/search?q=${clean}` },
-                { name: 'Telegram', url: `https://t.me/search?q=${clean}` },
-                { name: 'Instagram', url: `https://www.instagram.com/explore/tags/${clean.replace('+','')}` }
-            ];
-
-            saveToHistory('Телефон', clean, `Страна: ${country}, Оператор: ${operator}`);
+            const geo = await getGeoByCity(city);
+            const vkResults = await searchVK(surname, name, city);
 
             let html = '';
-            html += `<div class="section-title">📋 Основное</div><div class="grid-2col">`;
-            html += `<div class="grid-item"><span class="label">Номер</span><span class="value">${clean}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${country}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Оператор</span><span class="value">${operator}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${region}</span></div>`;
-            if (city && city !== 'Неизвестно') {
+
+            // Геолокация города
+            html += `<div class="section-title">📍 Геолокация города</div>`;
+            if (geo) {
+                html += `<div class="grid-2col">`;
                 html += `<div class="grid-item"><span class="label">Город</span><span class="value">${city}</span></div>`;
+                html += `<div class="grid-item"><span class="label">Широта</span><span class="value">${geo.lat}</span></div>`;
+                html += `<div class="grid-item"><span class="label">Долгота</span><span class="value">${geo.lon}</span></div>`;
+                html += `<div class="grid-item" style="grid-column:1/-1;"><span class="label">Адрес</span><span class="value" style="font-size:13px;">${geo.display_name}</span></div>`;
+                html += `</div>`;
+                html += `<div style="margin-top:10px;"><a href="https://www.openstreetmap.org/?mlat=${geo.lat}&mlon=${geo.lon}&zoom=12" target="_blank" class="link-btn">🗺️ Открыть карту</a></div>`;
+            } else {
+                html += `<div class="warning-msg">⚠️ Город не найден. Проверьте название.</div>`;
             }
+
+            // VK
+            if (vkResults.length > 0) {
+                html += `<div class="section-title">📱 VK (найдено ${vkResults.length})</div>`;
+                vkResults.forEach(user => {
+                    html += `<div class="profile-card">`;
+                    html += `<div class="name">${user.name}</div>`;
+                    html += `<div class="detail">Город: ${user.city}</div>`;
+                    html += `<a href="${user.link}" target="_blank" class="link-btn">Открыть профиль</a>`;
+                    if (user.photo) {
+                        html += `<img src="${user.photo}" style="width:50px;height:50px;border-radius:50%;margin-top:6px;">`;
+                    }
+                    html += `</div>`;
+                });
+            } else {
+                html += `<div class="section-title">📱 VK</div>`;
+                html += `<div class="warning-msg">⚠️ Не найдено. Попробуйте изменить запрос.</div>`;
+            }
+
+            // Другие соцсети
+            html += `<div class="section-title">🔗 Поиск в соцсетях</div>`;
+            const allLinks = [
+                ...searchInstagram(surname, name, city),
+                ...searchFacebook(surname, name, city),
+                ...searchTelegram(surname, name, city),
+                ...searchTwitter(surname, name, city),
+                ...searchTikTok(surname, name, city),
+                ...searchGoogle(surname, name, city)
+            ];
+            html += `<div>`;
+            allLinks.forEach(item => {
+                html += `<a href="${item.link}" target="_blank" class="link-btn">${item.source}</a>`;
+            });
             html += `</div>`;
 
-            html += `<div class="section-title">👤 Владелец</div>`;
-            if (name !== 'Не найдено') {
-                html += `<div class="found-name"><strong>Имя:</strong> ${name}<br><strong>Фамилия:</strong> ${surname}<br><span style="font-size:13px;color:#8aa0c0;">Источник: ${src.join(', ')}</span></div>`;
-            } else {
-                html += `<div class="warning-msg">⚠️ Имя не найдено. Попробуйте поискать вручную.</div>`;
-            }
-
-            if (breaches.length) {
-                html += `<div class="section-title">🔓 Утечки</div><div class="success-msg">✅ Найден в ${breaches.length} утечках</div>`;
-                breaches.slice(0, 5).forEach(b => html += `<span class="domain-tag">${b}</span>`);
-            } else {
-                html += `<div class="section-title">🔓 Утечки</div><div class="warning-msg">⚠️ Не найден в открытых базах</div>`;
-            }
-
-            html += `<div class="section-title">🔗 Поиск</div><div>`;
-            links.forEach(l => html += `<a href="${l.url}" target="_blank" class="link-btn">${l.name}</a>`);
-            html += `</div>`;
-
-            html += `<div class="section-title">📦 JSON</div><div id="rawJson">${JSON.stringify({ clean, country, operator, region, city, name, surname, breaches }, null, 2)}</div>`;
+            html += `<div class="section-title">📦 JSON</div>`;
+            html += `<div id="rawJson">${JSON.stringify({ geo, vkResults }, null, 2)}</div>`;
 
             showResult(html);
+
         } catch(e) {
             showError('Ошибка: ' + e.message);
         }
+
         hideLoader();
     }
 
     // ================================================================
-    // ПРИВЯЗКА СОБЫТИЙ К КНОПКАМ (ГАРАНТИРОВАННО РАБОТАЕТ)
+    // ПРИВЯЗКА КНОПОК
     // ================================================================
 
-    if (ipBtn) {
-        ipBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log('🖱️ Кнопка IP нажата');
-            const ip = ipInput ? ipInput.value.trim() : '';
-            analyzeIP(ip);
-        });
-    }
-
-    if (ipInput) {
-        ipInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                console.log('⌨️ Enter в поле IP');
-                if (ipBtn) ipBtn.click();
-            }
-        });
-    }
-
-    if (phoneBtn) {
-        phoneBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log('🖱️ Кнопка телефона нажата');
-            const phone = phoneInput ? phoneInput.value.trim() : '';
-            analyzePhone(phone);
-        });
-    }
-
-    if (phoneInput) {
-        phoneInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                console.log('⌨️ Enter в поле телефона');
-                if (phoneBtn) phoneBtn.click();
-            }
-        });
-    }
-
-    // ---- АВТОЗАПУСК ----
-    window.addEventListener('load', function() {
-        console.log('🚀 Страница загружена, автозапуск...');
-        analyzeIP('8.8.8.8');
+    ipBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const ip = ipInput.value.trim();
+        getGeoByIP(ip);
     });
 
-    console.log('✅ Готово. Все кнопки активны.');
+    ipInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') ipBtn.click();
+    });
+
+    searchBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        searchPerson();
+    });
+
+    document.querySelectorAll('#search-tab input').forEach(input => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') searchBtn.click();
+        });
+    });
+
+    // ---- АВТОЗАПУСК (IP) ----
+    window.addEventListener('load', function() {
+        console.log('🚀 Страница загружена');
+        // Автоматически показываем геопозицию для примера
+        getGeoByIP('8.8.8.8');
+    });
+
+    console.log('✅ Готово.');
 </script>
 </body>
 </html>
