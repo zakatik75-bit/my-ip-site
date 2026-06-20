@@ -78,7 +78,7 @@
 
 <script>
     // ================================================================
-    // SWILL OSINT — IP ГЕОПОЗИЦИЯ + ПОИСК ЛЮДЕЙ
+    // SWILL OSINT — БЕЗ CORS ОШИБОК (ТОЛЬКО РАБОЧИЕ API)
     // ================================================================
 
     console.log('✅ SWILL OSINT загружен');
@@ -110,7 +110,7 @@
     function showError(msg) { showResult(`<div class="warning-msg">❌ ${msg}</div>`); }
 
     // ================================================================
-    // 1. ГЕОПОЗИЦИЯ ПО IP
+    // 1. ГЕОПОЗИЦИЯ ПО IP (ipinfo.io — РАБОТАЕТ БЕЗ CORS)
     // ================================================================
     async function getGeoByIP(ip) {
         if (!ip || ip.trim() === '') {
@@ -122,6 +122,7 @@
         resultContainer.classList.remove('visible');
 
         try {
+            // ipinfo.io — работает без CORS
             const geo = await (await fetch(`https://ipinfo.io/${ip}/json`)).json();
             console.log('🌍 IP гео:', geo);
 
@@ -170,10 +171,10 @@
     }
 
     // ================================================================
-    // 2. ПОИСК ЛЮДЕЙ ПО ФАМИЛИИ, ИМЕНИ, ГОРОДУ
+    // 2. ПОИСК ЛЮДЕЙ (БЕЗ API С CORS)
     // ================================================================
 
-    // Геолокация города (OpenStreetMap)
+    // Геолокация города (OpenStreetMap — работает без CORS)
     async function getGeoByCity(city) {
         if (!city || city.trim() === '') return null;
         try {
@@ -190,24 +191,10 @@
         return null;
     }
 
-    // VK
-    async function searchVK(surname, name, city) {
-        let results = [];
-        try {
-            const query = `${surname} ${name} ${city}`;
-            const resp = await fetch(`https://api.vk.com/method/users.search?q=${encodeURIComponent(query)}&v=5.131&count=5`);
-            const data = await resp.json();
-            if (data.response && data.response.items) {
-                results = data.response.items.map(user => ({
-                    source: 'VK',
-                    name: `${user.first_name} ${user.last_name}`,
-                    link: `https://vk.com/id${user.id}`,
-                    photo: user.photo_100 || '',
-                    city: user.city ? user.city.title : 'Не указан'
-                }));
-            }
-        } catch(e) { console.log('VK ошибка:', e); }
-        return results;
+    // ---- ПОИСК В СОЦСЕТЯХ (ТОЛЬКО ССЫЛКИ, БЕЗ API) ----
+    function searchVK(surname, name, city) {
+        const query = `${surname} ${name} ${city}`;
+        return [{ source: 'VK (поиск)', link: `https://vk.com/search?q=${encodeURIComponent(query)}` }];
     }
 
     function searchInstagram(surname, name, city) {
@@ -240,6 +227,11 @@
         return [{ source: 'Google (поиск)', link: `https://www.google.com/search?q=${encodeURIComponent(query)}` }];
     }
 
+    function searchYandex(surname, name, city) {
+        const query = `${surname} ${name} ${city}`;
+        return [{ source: 'Яндекс (поиск)', link: `https://yandex.ru/search/?text=${encodeURIComponent(query)}` }];
+    }
+
     async function searchPerson() {
         const surname = surnameInput.value.trim();
         const name = nameInput.value.trim();
@@ -255,7 +247,6 @@
 
         try {
             const geo = await getGeoByCity(city);
-            const vkResults = await searchVK(surname, name, city);
 
             let html = '';
 
@@ -273,42 +264,30 @@
                 html += `<div class="warning-msg">⚠️ Город не найден. Проверьте название.</div>`;
             }
 
-            // VK
-            if (vkResults.length > 0) {
-                html += `<div class="section-title">📱 VK (найдено ${vkResults.length})</div>`;
-                vkResults.forEach(user => {
-                    html += `<div class="profile-card">`;
-                    html += `<div class="name">${user.name}</div>`;
-                    html += `<div class="detail">Город: ${user.city}</div>`;
-                    html += `<a href="${user.link}" target="_blank" class="link-btn">Открыть профиль</a>`;
-                    if (user.photo) {
-                        html += `<img src="${user.photo}" style="width:50px;height:50px;border-radius:50%;margin-top:6px;">`;
-                    }
-                    html += `</div>`;
-                });
-            } else {
-                html += `<div class="section-title">📱 VK</div>`;
-                html += `<div class="warning-msg">⚠️ Не найдено. Попробуйте изменить запрос.</div>`;
-            }
+            // Ссылки на поиск во всех соцсетях
+            html += `<div class="section-title">🔗 Поиск человека в соцсетях</div>`;
+            html += `<div style="margin-bottom:10px;color:#8da0c0;">Нажмите на ссылку, чтобы открыть поиск по запросу «${surname} ${name} ${city}»</div>`;
 
-            // Другие соцсети
-            html += `<div class="section-title">🔗 Поиск в соцсетях</div>`;
             const allLinks = [
+                ...searchVK(surname, name, city),
                 ...searchInstagram(surname, name, city),
                 ...searchFacebook(surname, name, city),
                 ...searchTelegram(surname, name, city),
                 ...searchTwitter(surname, name, city),
                 ...searchTikTok(surname, name, city),
-                ...searchGoogle(surname, name, city)
+                ...searchGoogle(surname, name, city),
+                ...searchYandex(surname, name, city)
             ];
+
             html += `<div>`;
             allLinks.forEach(item => {
                 html += `<a href="${item.link}" target="_blank" class="link-btn">${item.source}</a>`;
             });
             html += `</div>`;
 
+            // Сырые данные
             html += `<div class="section-title">📦 JSON</div>`;
-            html += `<div id="rawJson">${JSON.stringify({ geo, vkResults }, null, 2)}</div>`;
+            html += `<div id="rawJson">${JSON.stringify({ geo, query: `${surname} ${name} ${city}` }, null, 2)}</div>`;
 
             showResult(html);
 
@@ -347,11 +326,10 @@
     // ---- АВТОЗАПУСК (IP) ----
     window.addEventListener('load', function() {
         console.log('🚀 Страница загружена');
-        // Автоматически показываем геопозицию для примера
         getGeoByIP('8.8.8.8');
     });
 
-    console.log('✅ Готово.');
+    console.log('✅ Готово. Все API работают без CORS.');
 </script>
 </body>
 </html>
