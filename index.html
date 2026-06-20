@@ -3,384 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SWILL Intelligence</title>
+    <title>SWILL OSINT</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            background: #0b0e14;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            color: #e0e6f0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1100px;
-            width: 100%;
-            background: #151e2a;
-            border-radius: 24px;
-            padding: 30px 35px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.7);
-            border: 1px solid #2a3a4a;
-        }
-        h1 {
-            font-size: 28px;
-            font-weight: 600;
-            background: linear-gradient(135deg, #7aa9ff, #b47aff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-        }
-        .tabs {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #2a3a4a;
-            padding-bottom: 12px;
-            flex-wrap: wrap;
-        }
-        .tab {
-            padding: 8px 24px;
-            border-radius: 30px;
-            background: #1f2b38;
-            cursor: pointer;
-            transition: 0.2s;
-            font-weight: 500;
-        }
-        .tab.active {
-            background: linear-gradient(135deg, #3a7bd5, #7a4bff);
-            color: white;
-        }
-        .tab:hover {
-            transform: scale(1.02);
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        .sub {
-            color: #8a9bb5;
-            font-size: 14px;
-            margin-bottom: 25px;
-            border-left: 3px solid #3b5a7a;
-            padding-left: 16px;
-        }
-        .input-group {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 30px;
-        }
-        .input-group input {
-            flex: 1;
-            min-width: 220px;
-            padding: 14px 20px;
-            border-radius: 40px;
-            border: none;
-            background: #1f2b38;
-            color: #fff;
-            font-size: 16px;
-            outline: 1px solid #2e4155;
-        }
-        .input-group input:focus {
-            outline: 2px solid #5a8cff;
-        }
-        .input-group button {
-            padding: 14px 38px;
-            border-radius: 40px;
-            border: none;
-            background: linear-gradient(135deg, #3a7bd5, #7a4bff);
-            color: white;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .input-group button:hover {
-            transform: scale(1.02);
-            box-shadow: 0 6px 20px rgba(60, 100, 255, 0.5);
-        }
-        #loader {
-            display: none;
-            text-align: center;
-            padding: 20px 0;
-            font-size: 18px;
-            color: #7aa9ff;
-        }
-        #loader.show {
-            display: block;
-        }
-        .result-card {
-            background: #101a26;
-            border-radius: 18px;
-            padding: 20px 24px;
-            margin-top: 10px;
-            border: 1px solid #263544;
-            display: none;
-        }
-        .result-card.visible {
-            display: block;
-        }
-        .section-title {
-            font-size: 18px;
-            font-weight: 500;
-            margin-top: 22px;
-            margin-bottom: 12px;
-            color: #b6ccff;
-            border-bottom: 1px solid #2a3f54;
-            padding-bottom: 6px;
-        }
-        .section-title:first-of-type {
-            margin-top: 0;
-        }
-        .grid-2col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px 30px;
-            background: #0d1520;
-            padding: 14px 18px;
-            border-radius: 14px;
-        }
-        .grid-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            border-bottom: 1px solid #1e2d3d;
-        }
-        .grid-item .label {
-            color: #8da0c0;
-        }
-        .grid-item .value {
-            font-weight: 500;
-            color: #d6e4ff;
-            text-align: right;
-            word-break: break-all;
-            max-width: 60%;
-        }
-        .error-msg {
-            color: #ff7a7a;
-            background: #2a1a1a;
-            padding: 14px;
-            border-radius: 14px;
-            border-left: 4px solid #ff4a4a;
-        }
-        .warning-msg {
-            color: #ffcc66;
-            background: #2a2a1a;
-            padding: 14px;
-            border-radius: 14px;
-            border-left: 4px solid #ffaa00;
-            margin-top: 10px;
-        }
-        .success-msg {
-            color: #66ff88;
-            background: #1a2a1a;
-            padding: 14px;
-            border-radius: 14px;
-            border-left: 4px solid #00ff44;
-            margin-top: 10px;
-        }
-        .domain-tag {
-            background: #1b2a3c;
-            padding: 2px 14px;
-            border-radius: 30px;
-            font-size: 13px;
-            color: #b8d0f0;
-            display: inline-block;
-            margin: 3px 4px 3px 0;
-        }
-        #rawJson {
-            background: #0a111c;
-            padding: 14px;
-            border-radius: 12px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            max-height: 260px;
-            overflow: auto;
-            color: #b0c8e0;
-            border: 1px solid #223544;
-            margin-top: 10px;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-        .footer-note {
-            margin-top: 25px;
-            font-size: 13px;
-            color: #5a7088;
-            text-align: center;
-            border-top: 1px solid #1d2c3d;
-            padding-top: 18px;
-        }
-        .link-btn {
-            display: inline-block;
-            background: #1f3349;
-            padding: 6px 18px;
-            border-radius: 30px;
-            color: #7aa9ff;
-            text-decoration: none;
-            margin: 4px 6px 4px 0;
-            font-size: 14px;
-        }
-        .link-btn:hover {
-            background: #2a405a;
-        }
-        .found-name {
-            background: #1a2a1a;
-            border-left: 3px solid #66ff88;
-            padding: 12px 16px;
-            border-radius: 12px;
-            margin-top: 6px;
-            font-size: 16px;
-        }
-        .provider-location {
-            background: #1a2a3a;
-            border-left: 3px solid #7aa9ff;
-            padding: 12px 16px;
-            border-radius: 12px;
-            margin-top: 6px;
-            font-size: 15px;
-        }
-        @media (max-width: 700px) {
-            .container { padding: 18px; }
-            .grid-2col { grid-template-columns: 1fr; }
-            .input-group input { min-width: 140px; }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0b0e14; font-family: 'Segoe UI', sans-serif; color: #e0e6f0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { max-width: 1100px; width: 100%; background: #151e2a; border-radius: 24px; padding: 30px 35px; box-shadow: 0 20px 40px rgba(0,0,0,0.7); border: 1px solid #2a3a4a; }
+        h1 { font-size: 28px; background: linear-gradient(135deg, #7aa9ff, #b47aff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+        .tabs { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; border-bottom: 1px solid #2a3a4a; padding-bottom: 12px; }
+        .tab { padding: 8px 24px; border-radius: 30px; background: #1f2b38; cursor: pointer; transition: 0.2s; font-weight: 500; }
+        .tab.active { background: linear-gradient(135deg, #3a7bd5, #7a4bff); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .sub { color: #8a9bb5; font-size: 14px; margin-bottom: 25px; border-left: 3px solid #3b5a7a; padding-left: 16px; }
+        .input-group { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 30px; }
+        .input-group input { flex: 1; min-width: 220px; padding: 14px 20px; border-radius: 40px; border: none; background: #1f2b38; color: #fff; font-size: 16px; outline: 1px solid #2e4155; }
+        .input-group input:focus { outline: 2px solid #5a8cff; }
+        .input-group button { padding: 14px 38px; border-radius: 40px; border: none; background: linear-gradient(135deg, #3a7bd5, #7a4bff); color: white; font-weight: 600; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        .input-group button:hover { transform: scale(1.02); box-shadow: 0 6px 20px rgba(60, 100, 255, 0.5); }
+        #loader { display: none; text-align: center; padding: 20px 0; font-size: 18px; color: #7aa9ff; }
+        #loader.show { display: block; }
+        .result-card { background: #101a26; border-radius: 18px; padding: 20px 24px; margin-top: 10px; border: 1px solid #263544; display: none; }
+        .result-card.visible { display: block; }
+        .section-title { font-size: 18px; font-weight: 500; margin-top: 22px; margin-bottom: 12px; color: #b6ccff; border-bottom: 1px solid #2a3f54; padding-bottom: 6px; }
+        .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 30px; background: #0d1520; padding: 14px 18px; border-radius: 14px; }
+        .grid-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1e2d3d; }
+        .grid-item .label { color: #8da0c0; }
+        .grid-item .value { font-weight: 500; color: #d6e4ff; text-align: right; word-break: break-all; max-width: 60%; }
+        .warning-msg { color: #ffcc66; background: #2a2a1a; padding: 14px; border-radius: 14px; border-left: 4px solid #ffaa00; margin-top: 10px; }
+        .found-name { background: #1a2a1a; border-left: 3px solid #66ff88; padding: 12px 16px; border-radius: 12px; margin-top: 6px; font-size: 16px; }
+        .link-btn { display: inline-block; background: #1f3349; padding: 6px 18px; border-radius: 30px; color: #7aa9ff; text-decoration: none; margin: 4px 6px 4px 0; font-size: 14px; }
+        .domain-tag { background: #1b2a3c; padding: 2px 14px; border-radius: 30px; font-size: 13px; color: #b8d0f0; display: inline-block; margin: 3px 4px 3px 0; }
+        #rawJson { background: #0a111c; padding: 14px; border-radius: 12px; font-family: 'Courier New', monospace; font-size: 13px; max-height: 260px; overflow: auto; color: #b0c8e0; border: 1px solid #223544; margin-top: 10px; white-space: pre-wrap; word-break: break-all; }
+        .footer-note { margin-top: 25px; font-size: 13px; color: #5a7088; text-align: center; border-top: 1px solid #1d2c3d; padding-top: 18px; }
+        @media (max-width: 700px) { .container { padding: 18px; } .grid-2col { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h1>🕵️ SWILL Intelligence</h1>
-    <div class="sub">Определение местоположения по провайдеру IP-адреса</div>
-
+    <h1>🕵️ SWILL OSINT</h1>
+    <div class="sub">Сбор данных по IP, номеру, провайдеру — геолокация, соцсети, утечки, имя/фамилия</div>
     <div class="tabs">
-        <div class="tab active" data-tab="ip-tab">🌐 IP-адрес</div>
+        <div class="tab active" data-tab="ip-tab">🌐 IP</div>
         <div class="tab" data-tab="phone-tab">📱 Телефон</div>
     </div>
-
     <div id="ip-tab" class="tab-content active">
         <div class="input-group">
-            <input type="text" id="ipInput" placeholder="Введите IP, например 8.8.8.8" value="8.8.8.8">
-            <button id="ipAnalyzeBtn">🔍 Анализировать IP</button>
+            <input type="text" id="ipInput" placeholder="IP, например 8.8.8.8" value="8.8.8.8">
+            <button id="ipAnalyzeBtn">🔍 Анализировать</button>
         </div>
     </div>
-
     <div id="phone-tab" class="tab-content">
         <div class="input-group">
-            <input type="text" id="phoneInput" placeholder="Введите номер, например +79261234567">
-            <button id="phoneAnalyzeBtn">🔍 Пробить номер</button>
+            <input type="text" id="phoneInput" placeholder="+79261234567">
+            <button id="phoneAnalyzeBtn">🔍 Пробить</button>
         </div>
     </div>
-
     <div id="loader"><span>⏳ Сбор данных...</span></div>
     <div id="resultContainer" class="result-card"></div>
-
-    <div class="footer-note">
-        ⚡ Данные из публичных API и OSINT-источников
-    </div>
+    <div class="footer-note">⚡ Только публичные API и открытые источники</div>
 </div>
 
 <script>
-    // ================================================================
-    // ВЕРСИЯ 2.0 — ПРИОРИТЕТ ПРОВАЙДЕРА + ОТЛАДКА
-    // ================================================================
+    console.log('✅ SWILL OSINT загружен');
 
-    console.log('✅ SWILL Intelligence загружен!');
-
-    // ---- БАЗА ПРОВАЙДЕРОВ С ГЕОГРАФИЧЕСКОЙ ПРИВЯЗКОЙ ----
+    // ---- БАЗА ПРОВАЙДЕРОВ ----
     const PROVIDER_DB = {
-        // Россия
-        'FOR UNITY LLC': { city: 'Ереван', region: 'Армения', country: 'AM', lat: '40.1776', lon: '44.5126' },
-        'ROSTELECOM': { city: 'Москва', region: 'Московская область', country: 'RU', lat: '55.7558', lon: '37.6173' },
-        'MTS': { city: 'Москва', region: 'Московская область', country: 'RU', lat: '55.7558', lon: '37.6173' },
-        'BEELINE': { city: 'Москва', region: 'Московская область', country: 'RU', lat: '55.7558', lon: '37.6173' },
-        'MEGAFON': { city: 'Москва', region: 'Московская область', country: 'RU', lat: '55.7558', lon: '37.6173' },
-        'TELE2': { city: 'Москва', region: 'Московская область', country: 'RU', lat: '55.7558', lon: '37.6173' },
-        // США
-        'GOOGLE': { city: 'Маунтин-Вью', region: 'Калифорния', country: 'US', lat: '37.3860', lon: '-122.0838' },
-        'CLOUDFLARE': { city: 'Сан-Франциско', region: 'Калифорния', country: 'US', lat: '37.7749', lon: '-122.4194' },
-        'AMAZON': { city: 'Сиэтл', region: 'Вашингтон', country: 'US', lat: '47.6062', lon: '-122.3321' },
-        'MICROSOFT': { city: 'Редмонд', region: 'Вашингтон', country: 'US', lat: '47.6740', lon: '-122.1215' },
-        'FACEBOOK': { city: 'Менло-Парк', region: 'Калифорния', country: 'US', lat: '37.4535', lon: '-122.1797' },
-        // Европа
-        'OVH': { city: 'Рубе', region: 'О-де-Франс', country: 'FR', lat: '50.6927', lon: '3.1745' },
-        'HETZNER': { city: 'Гюнценхаузен', region: 'Бавария', country: 'DE', lat: '49.4554', lon: '11.0611' },
-        'DTAG': { city: 'Бонн', region: 'Северный Рейн-Вестфалия', country: 'DE', lat: '50.7374', lon: '7.0982' },
-        'BT': { city: 'Лондон', region: 'Англия', country: 'GB', lat: '51.5074', lon: '-0.1278' },
-        // Азия
-        'CHINANET': { city: 'Пекин', region: 'Пекин', country: 'CN', lat: '39.9042', lon: '116.4074' },
-        'KORNET': { city: 'Сеул', region: 'Сеул', country: 'KR', lat: '37.5665', lon: '126.9780' },
-        'BIGLOBE': { city: 'Токио', region: 'Токио', country: 'JP', lat: '35.6762', lon: '139.6503' },
-        // Украина
-        'KIEVSTAR': { city: 'Киев', region: 'Киевская область', country: 'UA', lat: '50.4501', lon: '30.5234' },
-        'UKRTELECOM': { city: 'Киев', region: 'Киевская область', country: 'UA', lat: '50.4501', lon: '30.5234' },
-        // Беларусь
-        'BELTELECOM': { city: 'Минск', region: 'Минская область', country: 'BY', lat: '53.9045', lon: '27.5615' },
-        // Казахстан
-        'KAZAKHTELECOM': { city: 'Алматы', region: 'Алматинская область', country: 'KZ', lat: '43.2220', lon: '76.8512' }
+        'FOR UNITY LLC': { city: 'Ереван', region: 'Армения', country: 'AM' },
+        'GOOGLE': { city: 'Маунтин-Вью', region: 'Калифорния', country: 'US' },
+        'CLOUDFLARE': { city: 'Сан-Франциско', region: 'Калифорния', country: 'US' },
+        'AMAZON': { city: 'Сиэтл', region: 'Вашингтон', country: 'US' },
+        'MICROSOFT': { city: 'Редмонд', region: 'Вашингтон', country: 'US' },
+        'MTS': { city: 'Москва', region: 'Московская область', country: 'RU' },
+        'BEELINE': { city: 'Москва', region: 'Московская область', country: 'RU' },
+        'MEGAFON': { city: 'Москва', region: 'Московская область', country: 'RU' },
+        'ROSTELECOM': { city: 'Москва', region: 'Московская область', country: 'RU' },
+        'TELE2': { city: 'Москва', region: 'Московская область', country: 'RU' },
+        'HETZNER': { city: 'Гюнценхаузен', region: 'Бавария', country: 'DE' },
+        'OVH': { city: 'Рубе', region: 'О-де-Франс', country: 'FR' }
     };
 
-    // ---- ПОИСК ПРОВАЙДЕРА В БАЗЕ ----
-    function findProviderLocation(org) {
+    function findProvider(org) {
         if (!org) return null;
-
-        // 1. Точное совпадение
-        if (PROVIDER_DB[org]) {
-            return PROVIDER_DB[org];
-        }
-
-        // 2. Частичное совпадение
         for (let key in PROVIDER_DB) {
-            if (org.includes(key) || key.includes(org)) {
-                return PROVIDER_DB[key];
-            }
+            if (org.includes(key) || key.includes(org)) return PROVIDER_DB[key];
         }
-
-        // 3. По словам
-        const words = org.split(' ');
-        for (let word of words) {
-            if (word.length > 3) {
-                for (let key in PROVIDER_DB) {
-                    if (key.includes(word) || word.includes(key)) {
-                        return PROVIDER_DB[key];
-                    }
-                }
-            }
-        }
-
         return null;
     }
 
     // ---- ЭЛЕМЕНТЫ ----
     const ipInput = document.getElementById('ipInput');
-    const ipAnalyzeBtn = document.getElementById('ipAnalyzeBtn');
+    const ipBtn = document.getElementById('ipAnalyzeBtn');
     const phoneInput = document.getElementById('phoneInput');
-    const phoneAnalyzeBtn = document.getElementById('phoneAnalyzeBtn');
+    const phoneBtn = document.getElementById('phoneAnalyzeBtn');
     const loader = document.getElementById('loader');
-    const resultContainer = document.getElementById('resultContainer');
+    const result = document.getElementById('resultContainer');
 
-    console.log('🔍 Элементы найдены:', {
-        ipInput: !!ipInput,
-        ipAnalyzeBtn: !!ipAnalyzeBtn,
-        phoneInput: !!phoneInput,
-        phoneAnalyzeBtn: !!phoneAnalyzeBtn,
-        loader: !!loader,
-        resultContainer: !!resultContainer
-    });
-
-    // ---- ВКЛАДКИ ----
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => {
+        t.addEventListener('click', function() {
+            document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
             this.classList.add('active');
             document.getElementById(this.dataset.tab).classList.add('active');
         });
@@ -388,324 +109,184 @@
 
     function showLoader() { loader.classList.add('show'); }
     function hideLoader() { loader.classList.remove('show'); }
-    function showResult(html) {
-        resultContainer.innerHTML = html;
-        resultContainer.classList.add('visible');
-    }
-    function showError(message) {
-        showResult(`<div class="error-msg">❌ ${message}</div>`);
-    }
+    function showResult(html) { result.innerHTML = html; result.classList.add('visible'); }
+    function showError(msg) { showResult(`<div class="warning-msg">❌ ${msg}</div>`); }
 
-    // ================================================================
-    // 1. АНАЛИЗ IP (ПРИОРИТЕТ — ПРОВАЙДЕР)
-    // ================================================================
+    // ---- ОСНОВНАЯ ФУНКЦИЯ IP ----
     async function analyzeIP(ip) {
-        console.log('🔍 Анализ IP:', ip);
         showLoader();
-        resultContainer.classList.remove('visible');
-
+        result.classList.remove('visible');
         try {
-            // ----- 1. ГЕОЛОКАЦИЯ (ipinfo.io) -----
-            console.log('📡 Запрос к ipinfo.io...');
-            const geoResp = await fetch(`https://ipinfo.io/${ip}/json`);
-            if (!geoResp.ok) throw new Error('Не удалось получить геоданные');
-            const geo = await geoResp.json();
-            console.log('🌍 Гео:', geo);
+            const geo = await (await fetch(`https://ipinfo.io/${ip}/json`)).json();
+            const providerLoc = findProvider(geo.org);
 
-            // ----- 2. ПОИСК ПО ПРОВАЙДЕРУ -----
-            const providerOrg = geo.org || '';
-            console.log('🏢 Провайдер:', providerOrg);
-
-            let location = findProviderLocation(providerOrg);
-            console.log('📍 Найденное местоположение:', location);
-
-            // Если провайдер не найден — используем геолокацию по IP
-            if (!location) {
-                location = {
-                    city: geo.city || 'N/A',
-                    region: geo.region || 'N/A',
-                    country: geo.country || 'N/A',
-                    lat: geo.loc ? geo.loc.split(',')[0] : 'N/A',
-                    lon: geo.loc ? geo.loc.split(',')[1] : 'N/A'
-                };
-                console.log('📍 Используем геолокацию по IP');
-            }
-
-            // ----- 3. ПОИСК ИМЕНИ (из провайдера) -----
-            let nameData = { name: 'Не найдено', surname: 'Не найдено', source: [] };
+            let name = 'Не найдено', surname = 'Не найдено', src = [];
             if (geo.org) {
                 const parts = geo.org.split(' ');
-                const common = ['LLC', 'LTD', 'INC', 'CORP', 'CO', 'AS', 'SIA', 'OOO', 'ООО', 'FOR', 'UNITY'];
-                const filtered = parts.filter(p => !common.includes(p.toUpperCase()) && p.length > 2);
-                if (filtered.length > 0) {
-                    nameData.name = filtered[0];
-                    if (filtered.length > 1) nameData.surname = filtered.slice(1).join(' ');
-                    nameData.source.push('провайдер');
-                }
+                const common = ['LLC','LTD','INC','CORP','AS','SIA','OOO','ООО','FOR','UNITY'];
+                const f = parts.filter(p => !common.includes(p.toUpperCase()) && p.length > 2);
+                if (f.length) { name = f[0]; if (f.length > 1) surname = f.slice(1).join(' '); src.push('провайдер'); }
             }
 
-            // ----- 4. REVERSE IP (домены) -----
+            // Reverse IP
             try {
-                const rtResp = await fetch(`https://api.hackertarget.com/reverseiplookup/?q=${ip}`);
-                const rtText = await rtResp.text();
-                if (rtText && !rtText.includes('error') && !rtText.includes('No DNS')) {
-                    const domains = rtText.split('\n').filter(d => d.trim() !== '').slice(0, 10);
-                    for (let domain of domains) {
-                        const parts = domain.replace(/\.(ru|com|org|net|info|xyz|ua|by|kz)$/, '').split(/[-_.]/);
-                        for (let part of parts) {
-                            if (part.length > 2 && part.match(/^[a-zA-Zа-яА-Я]/) && !part.match(/^www$/i) && !part.match(/^mail$/i)) {
-                                if (nameData.name === 'Не найдено') {
-                                    nameData.name = part.charAt(0).toUpperCase() + part.slice(1);
-                                    nameData.source.push('домен');
-                                }
+                const rt = await (await fetch(`https://api.hackertarget.com/reverseiplookup/?q=${ip}`)).text();
+                if (rt && !rt.includes('error') && !rt.includes('No DNS')) {
+                    const domains = rt.split('\n').filter(d => d.trim()).slice(0, 5);
+                    for (let d of domains) {
+                        const parts = d.replace(/\.(ru|com|org|net|info|xyz|ua|by|kz)$/,'').split(/[-_.]/);
+                        for (let p of parts) {
+                            if (p.length > 2 && p.match(/^[a-zA-Zа-яА-Я]/) && !p.match(/^www$/i) && name === 'Не найдено') {
+                                name = p.charAt(0).toUpperCase() + p.slice(1);
+                                src.push('домен');
                             }
                         }
                     }
                 }
-            } catch (e) { console.log('ℹ️ Reverse IP не доступен'); }
+            } catch(e){}
 
-            // ----- 5. ФОРМИРУЕМ ОТВЕТ -----
+            // Соцсети (ссылки для ручного поиска)
+            const socialLinks = [
+                { name: 'VK', url: `https://vk.com/search?q=${ip}` },
+                { name: 'Google', url: `https://www.google.com/search?q=${ip}` },
+                { name: 'Telegram', url: `https://t.me/search?q=${ip}` },
+                { name: 'Instagram', url: `https://www.instagram.com/explore/tags/${ip.replace(/\./g,'')}` }
+            ];
+
             let html = '';
 
-            // Местоположение по провайдеру (ОСНОВНОЕ)
-            html += `<div class="section-title">📍 Местоположение (по провайдеру)</div>`;
-            html += `<div class="grid-2col">`;
-            html += `<div class="grid-item"><span class="label">Город</span><span class="value">${location.city}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${location.region}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${location.country}</span></div>`;
-            if (location.lat !== 'N/A' && location.lon !== 'N/A') {
-                html += `<div class="grid-item"><span class="label">Координаты</span><span class="value">${location.lat}, ${location.lon}</span></div>`;
+            html += `<div class="section-title">📍 Местоположение (по провайдеру)</div><div class="grid-2col">`;
+            if (providerLoc) {
+                html += `<div class="grid-item"><span class="label">Город</span><span class="value">${providerLoc.city}</span></div>`;
+                html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${providerLoc.region}</span></div>`;
+                html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${providerLoc.country}</span></div>`;
+            } else {
+                html += `<div class="grid-item" style="grid-column:1/-1;"><span class="label">⚠️ Провайдер не найден в базе</span><span class="value">используется гео по IP</span></div>`;
             }
             html += `</div>`;
 
-            // Информация о провайдере
-            html += `<div class="section-title">🏢 Провайдер</div>`;
-            html += `<div class="grid-2col">`;
+            html += `<div class="section-title">🏢 Провайдер</div><div class="grid-2col">`;
             html += `<div class="grid-item" style="grid-column:1/-1;"><span class="label">Название</span><span class="value">${geo.org || 'N/A'}</span></div>`;
             html += `</div>`;
 
-            // Владелец
-            html += `<div class="section-title">👤 Владелец (по IP)</div>`;
-            html += `<div class="grid-2col">`;
-            html += `<div class="grid-item"><span class="label">Имя</span><span class="value">${nameData.name}</span></div>`;
-            html += `<div class="grid-item"><span class="label">Фамилия</span><span class="value">${nameData.surname}</span></div>`;
-            if (nameData.source.length > 0) {
-                html += `<div class="grid-item" style="grid-column:1/-1;border-bottom:none;">
-                    <span class="label">Источник</span>
-                    <span class="value" style="font-weight:300;font-size:13px;color:#8aa0c0;">${nameData.source.join(', ')}</span>
-                </div>`;
+            html += `<div class="section-title">👤 Владелец (по IP)</div><div class="grid-2col">`;
+            html += `<div class="grid-item"><span class="label">Имя</span><span class="value">${name}</span></div>`;
+            html += `<div class="grid-item"><span class="label">Фамилия</span><span class="value">${surname}</span></div>`;
+            if (src.length) {
+                html += `<div class="grid-item" style="grid-column:1/-1;border-bottom:none;"><span class="label">Источник</span><span class="value" style="font-weight:300;font-size:13px;color:#8aa0c0;">${src.join(', ')}</span></div>`;
             }
             html += `</div>`;
 
-            // Геолокация по IP (для сравнения)
-            html += `<div class="section-title">📍 Геолокация (по IP)</div>`;
-            html += `<div class="grid-2col">`;
+            html += `<div class="section-title">🔗 Соцсети и поиск</div><div>`;
+            socialLinks.forEach(l => {
+                html += `<a href="${l.url}" target="_blank" class="link-btn">${l.name}</a>`;
+            });
+            html += `</div>`;
+
+            html += `<div class="section-title">📍 Геолокация (по IP)</div><div class="grid-2col">`;
             html += `<div class="grid-item"><span class="label">Город</span><span class="value">${geo.city || 'N/A'}</span></div>`;
             html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${geo.region || 'N/A'}</span></div>`;
             html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${geo.country || 'N/A'}</span></div>`;
             html += `<div class="grid-item"><span class="label">Координаты</span><span class="value">${geo.loc || 'N/A'}</span></div>`;
             html += `</div>`;
 
-            html += `<div class="section-title">📦 Сырые данные (JSON)</div>`;
-            html += `<div id="rawJson">${JSON.stringify({ geo, providerLocation: location, name: nameData }, null, 2)}</div>`;
+            html += `<div class="section-title">📦 JSON</div><div id="rawJson">${JSON.stringify({ geo, providerLoc, name }, null, 2)}</div>`;
 
             showResult(html);
-
-        } catch (error) {
-            console.error('❌ Ошибка:', error);
-            showError(`Ошибка: ${error.message}`);
-        } finally {
-            hideLoader();
+        } catch(e) {
+            showError('Ошибка: ' + e.message);
         }
+        hideLoader();
     }
 
-    // ================================================================
-    // 2. АНАЛИЗ ТЕЛЕФОНА
-    // ================================================================
+    // ---- ТЕЛЕФОН ----
     async function analyzePhone(phone) {
-        console.log('🔍 Анализ номера:', phone);
         showLoader();
-        resultContainer.classList.remove('visible');
-
-        const cleanNumber = phone.replace(/[^0-9+]/g, '').trim();
-        if (!cleanNumber) {
-            showError('Введите номер телефона');
-            hideLoader();
-            return;
-        }
+        result.classList.remove('visible');
+        const clean = phone.replace(/[^0-9+]/g, '').trim();
+        if (!clean) { showError('Введите номер'); hideLoader(); return; }
 
         try {
-            let country = 'Неизвестно';
-            let operator = 'Неизвестно';
-            let region = 'Неизвестно';
-            let city = 'Неизвестно';
-
-            const countryCodes = {
-                '7': 'Россия', '380': 'Украина', '375': 'Беларусь', '1': 'США',
-                '44': 'Великобритания', '49': 'Германия', '33': 'Франция',
-                '39': 'Италия', '34': 'Испания', '86': 'Китай', '91': 'Индия'
-            };
-
-            let cleanForCountry = cleanNumber.replace(/^\+/, '');
-            for (let code in countryCodes) {
-                if (cleanForCountry.startsWith(code)) {
-                    country = countryCodes[code];
-                    break;
-                }
-            }
+            let country = 'Неизвестно', operator = 'Неизвестно', region = 'Неизвестно';
+            const codes = { '7':'Россия','380':'Украина','375':'Беларусь','1':'США','44':'Великобритания','49':'Германия' };
+            let c = clean.replace(/^\+/,'');
+            for (let k in codes) { if (c.startsWith(k)) { country = codes[k]; break; } }
 
             if (country === 'Россия') {
-                const prefix = cleanNumber.replace(/^\+7/, '').replace(/^8/, '').substring(0, 3);
-                const operators = {
-                    '900': 'Tele2', '901': 'Tele2', '902': 'Tele2', '903': 'Билайн', '904': 'Tele2',
-                    '905': 'Билайн', '906': 'Билайн', '908': 'Билайн', '909': 'Билайн', '910': 'МТС',
-                    '916': 'МТС', '920': 'Мегафон', '921': 'Мегафон', '925': 'Мегафон',
-                    '930': 'МТС', '950': 'МТС', '960': 'Мегафон', '970': 'Билайн',
-                    '980': 'Tele2', '981': 'Tele2', '982': 'Tele2', '990': 'МТС', '999': 'МТС'
-                };
-                operator = operators[prefix] || 'Неизвестно';
-
-                const regionMap = {
-                    '903': 'Москва', '905': 'Москва', '906': 'Москва', '910': 'Центральный',
-                    '916': 'Москва', '920': 'Москва', '925': 'Москва', '926': 'Москва',
-                    '929': 'Москва', '930': 'Центральный', '950': 'Центральный',
-                    '960': 'Северо-Запад', '970': 'Южный', '980': 'Поволжье', '990': 'Урал'
-                };
-                region = regionMap[prefix] || 'Неизвестно';
-                city = region;
+                const p = clean.replace(/^\+7/,'').replace(/^8/,'').substring(0,3);
+                const op = { '903':'Билайн','910':'МТС','920':'Мегафон','980':'Tele2' };
+                operator = op[p] || 'Неизвестно';
+                const reg = { '903':'Москва','910':'Центр','920':'Москва','980':'Поволжье' };
+                region = reg[p] || 'Неизвестно';
             }
 
-            let foundName = { name: 'Не найдено', surname: 'Не найдено', source: [] };
+            // Утечки
             let breaches = [];
-
             try {
-                const leakResp = await fetch(`https://leak-check.net/api/public?phone=${cleanNumber}`);
-                if (leakResp.ok) {
-                    const data = await leakResp.json();
-                    breaches = data.breaches || [];
-                    if (data.breaches && data.breaches.length > 0) {
-                        foundName.source.push('leak-check');
-                        for (let breach of data.breaches) {
-                            if (breach.includes(' ') && breach.match(/[а-яА-Я]/)) {
-                                const parts = breach.split(' ');
-                                if (parts.length >= 2) {
-                                    foundName.name = parts[0];
-                                    foundName.surname = parts.slice(1).join(' ');
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (e) {}
+                const leak = await (await fetch(`https://leak-check.net/api/public?phone=${clean}`)).json();
+                breaches = leak.breaches || [];
+            } catch(e){}
 
+            // Имя через VK
+            let name = 'Не найдено', surname = 'Не найдено', src = [];
             try {
-                const vkResp = await fetch(`https://api.vk.com/method/users.search?q=${cleanNumber}&v=5.131`);
-                if (vkResp.ok) {
-                    const data = await vkResp.json();
-                    if (data.response && data.response.items && data.response.items.length > 0) {
-                        const user = data.response.items[0];
-                        foundName.name = user.first_name || 'Не найдено';
-                        foundName.surname = user.last_name || 'Не найдено';
-                        foundName.source.push('VK');
-                    }
+                const vk = await (await fetch(`https://api.vk.com/method/users.search?q=${clean}&v=5.131`)).json();
+                if (vk.response && vk.response.items && vk.response.items.length) {
+                    const u = vk.response.items[0];
+                    name = u.first_name || 'Не найдено';
+                    surname = u.last_name || 'Не найдено';
+                    src.push('VK');
                 }
-            } catch (e) {}
+            } catch(e){}
 
-            const searchLinks = [
-                { name: 'Google', url: `https://www.google.com/search?q=${cleanNumber}` },
-                { name: 'Yandex', url: `https://yandex.ru/search/?text=${cleanNumber}` },
-                { name: 'VK', url: `https://vk.com/search?q=${cleanNumber}` },
-                { name: 'Telegram', url: `https://t.me/search?q=${cleanNumber}` }
+            const links = [
+                { name: 'Google', url: `https://www.google.com/search?q=${clean}` },
+                { name: 'VK', url: `https://vk.com/search?q=${clean}` },
+                { name: 'Telegram', url: `https://t.me/search?q=${clean}` }
             ];
 
             let html = '';
-
-            html += `<div class="section-title">📋 Основная информация</div>`;
-            html += `<div class="grid-2col">`;
-            html += `<div class="grid-item"><span class="label">Номер</span><span class="value">${cleanNumber}</span></div>`;
+            html += `<div class="section-title">📋 Основное</div><div class="grid-2col">`;
+            html += `<div class="grid-item"><span class="label">Номер</span><span class="value">${clean}</span></div>`;
             html += `<div class="grid-item"><span class="label">Страна</span><span class="value">${country}</span></div>`;
             html += `<div class="grid-item"><span class="label">Оператор</span><span class="value">${operator}</span></div>`;
             html += `<div class="grid-item"><span class="label">Регион</span><span class="value">${region}</span></div>`;
             html += `</div>`;
 
             html += `<div class="section-title">👤 Владелец</div>`;
-            if (foundName.name !== 'Не найдено') {
-                html += `<div class="found-name">`;
-                html += `<strong>Имя:</strong> ${foundName.name}<br>`;
-                html += `<strong>Фамилия:</strong> ${foundName.surname}<br>`;
-                if (foundName.source.length > 0) {
-                    html += `<span style="font-size:13px;color:#8aa0c0;">Источник: ${foundName.source.join(', ')}</span>`;
-                }
-                html += `</div>`;
+            if (name !== 'Не найдено') {
+                html += `<div class="found-name"><strong>Имя:</strong> ${name}<br><strong>Фамилия:</strong> ${surname}<br><span style="font-size:13px;color:#8aa0c0;">Источник: ${src.join(', ')}</span></div>`;
             } else {
-                html += `<div class="warning-msg">⚠️ Имя и фамилия не найдены.<br>
-                Попробуйте поискать вручную по ссылкам ниже.</div>`;
+                html += `<div class="warning-msg">⚠️ Имя не найдено. Попробуйте поискать вручную.</div>`;
             }
 
-            if (breaches.length > 0) {
-                html += `<div class="section-title">🔓 Найден в утечках</div>`;
-                html += `<div class="success-msg">✅ Найден в ${breaches.length} утечках</div>`;
+            if (breaches.length) {
+                html += `<div class="section-title">🔓 Утечки</div><div class="warning-msg" style="color:#66ff88;border-left-color:#66ff88;">✅ Найден в ${breaches.length} утечках</div>`;
+                breaches.slice(0,5).forEach(b => html += `<span class="domain-tag">${b}</span>`);
             } else {
-                html += `<div class="section-title">🔓 Утечки</div>`;
-                html += `<div class="warning-msg">⚠️ Не найден в открытых базах утечек</div>`;
+                html += `<div class="section-title">🔓 Утечки</div><div class="warning-msg">⚠️ Не найден в открытых базах</div>`;
             }
 
-            html += `<div class="section-title">🔗 Поиск в интернете</div>`;
-            html += `<div>`;
-            searchLinks.forEach(link => {
-                html += `<a href="${link.url}" target="_blank" class="link-btn">${link.name}</a>`;
-            });
+            html += `<div class="section-title">🔗 Поиск</div><div>`;
+            links.forEach(l => html += `<a href="${l.url}" target="_blank" class="link-btn">${l.name}</a>`);
             html += `</div>`;
 
-            html += `<div class="section-title">📦 Сырые данные</div>`;
-            html += `<div id="rawJson">${JSON.stringify({ number: cleanNumber, country, operator, region, city, foundName, breaches }, null, 2)}</div>`;
+            html += `<div class="section-title">📦 JSON</div><div id="rawJson">${JSON.stringify({ clean, country, operator, region, name, surname, breaches }, null, 2)}</div>`;
 
             showResult(html);
-
-        } catch (error) {
-            showError(`Ошибка: ${error.message}`);
-        } finally {
-            hideLoader();
+        } catch(e) {
+            showError('Ошибка: ' + e.message);
         }
+        hideLoader();
     }
 
-    // ---- ОБРАБОТЧИКИ ----
-    ipAnalyzeBtn.addEventListener('click', function() {
-        console.log('🖱️ Кнопка IP нажата');
-        const ip = ipInput.value.trim();
-        if (!ip) { alert('Введите IP-адрес'); return; }
-        analyzeIP(ip);
-    });
+    // ---- СОБЫТИЯ ----
+    ipBtn.addEventListener('click', () => { const v = ipInput.value.trim(); if (v) analyzeIP(v); else alert('Введите IP'); });
+    ipInput.addEventListener('keydown', e => { if (e.key === 'Enter') ipBtn.click(); });
+    phoneBtn.addEventListener('click', () => { const v = phoneInput.value.trim(); if (v) analyzePhone(v); else alert('Введите номер'); });
+    phoneInput.addEventListener('keydown', e => { if (e.key === 'Enter') phoneBtn.click(); });
 
-    ipInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            console.log('⌨️ Enter в поле IP');
-            ipAnalyzeBtn.click();
-        }
-    });
-
-    phoneAnalyzeBtn.addEventListener('click', function() {
-        console.log('🖱️ Кнопка телефона нажата');
-        const phone = phoneInput.value.trim();
-        if (!phone) { alert('Введите номер телефона'); return; }
-        analyzePhone(phone);
-    });
-
-    phoneInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            console.log('⌨️ Enter в поле телефона');
-            phoneAnalyzeBtn.click();
-        }
-    });
-
-    // ---- АВТОЗАПУСК ----
-    window.addEventListener('load', function() {
-        console.log('🚀 Страница загружена, выполняю автозапуск...');
-        analyzeIP('8.8.8.8');
-    });
-
-    console.log('✅ Готово! Ожидаю действий пользователя.');
+    window.addEventListener('load', () => analyzeIP('8.8.8.8'));
 </script>
 </body>
 </html>
